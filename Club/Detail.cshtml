@@ -1,0 +1,137 @@
+﻿@* Remove this section if you are using bundling *@
+@section Scripts {
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+}
+
+@{
+    Page.Title = "Club";
+    Global.BodyClass = "swim-details event page";
+
+    var club_id = UrlData[0].AsInt(-1);
+    var db = Database.Open("Swamthat");
+
+    var swim_club = db.QuerySingle("SELECT * FROM club WHERE ClubId = @0", club_id);
+    var club_state = db.QuerySingle("SELECT name FROM us_states where StateId = @0", swim_club.state);
+
+    string phone_num = System.Text.RegularExpressions.Regex.Replace(swim_club.phone.ToString(), "[^A-Za-z0-9 _]", "");
+    string phone_n = string.Format("{0:(###) ###-####}", phone_num); //(123) 456-7890 String.Format("{0:(###) ###-####}", 8005551212);
+    
+    // Check if is owner of club
+    bool user_is_owner = false;
+    if (swim_club.club_by_uid == WebSecurity.CurrentUserId)
+    {
+        user_is_owner = true;
+    }
+
+    string state_val = club_state.name;
+    if (string.IsNullOrEmpty(state_val))
+    {
+        state_val = "No State Specified";
+    }
+
+    Page.Title += " - " + swim_club.name;
+
+    var jsondata = Weather.GetWeatherJSON(club_state.name, swim_club.city);
+    var data = Json.Decode(jsondata);
+    var forecast = new List<dynamic>(data.query.results.channel.item.forecast);
+
+    string weather_image_url = string.Empty;
+    string weather_code = string.Empty;
+    string weather_temp = string.Empty;
+    dynamic weather_result = null;
+    if (forecast != null)
+    {
+        weather_result = forecast.FirstOrDefault();
+        weather_image_url = Href("~/theme/ico/weather/" + weather_result.code + ".png");
+        //weather_image_url = "http://l.yimg.com/a/i/us/we/52/" + weather_result.code + ".gif";
+        weather_temp = weather_result.high;
+    }
+    else
+    {
+        weather_image_url = "~/theme/ico/weather-ico.png";
+        weather_temp = "Weather Not Available";
+    }
+
+    string map_url = string.Format("https://www.google.com/maps/place/{0},+{1}/@{2},{3},14z",
+            swim_club.city, club_state.name, data.query.results.channel.item.lat, data.query.results.channel.item["long"]);
+    
+}
+	<div class="row">
+	<div class="content col-sm-9">
+	
+	
+	<!-- Branding -->
+	<div class="event-branding">
+	
+		
+        @if (!string.IsNullOrEmpty(swim_club.image_url))
+        {
+		    <div class="event-logo">
+		    <img src="@Href(swim_club.image_url)" />
+		    </div>
+        }
+		
+		<div class="title-image">
+		<img src="@Href(swim_club.image_banner_url)">
+		</div>
+		
+		<!-- Location/Weather -->
+		<div class="row event-local">
+		
+		<div class="col-sm-4 location-weather">
+		<img class="symbol-ico" src="@weather_image_url">
+		
+		<div class="weather-temp"><h2>@weather_temp&#730;</h2></div>@*//String.Format("Temperature at {0,8:t} on {0,9:d}: {1,5:N1}°F", item.Key, item.Value);*@
+		</div>
+		
+		<div class="col-sm-4 local">
+		<h3>@swim_club.city</h3>
+		<p>@club_state.name<br />
+		@swim_club.phone
+		</p>
+		
+		</div>
+		
+		<div class="col-sm-4 map-local">
+		<p><a href="@map_url" target="_blank" class="btn btn-primary" role="button">Map Location</a></p>
+		</div>
+				
+		</div>
+		<!-- /Location/Weather -->
+	
+	<!-- /Branding -->
+	</div>
+	
+	
+	<!-- Club Description -->
+	<div class="event-description">
+
+	<h1 class="page-title">@swim_club.name</h1>
+	
+	<h5 class="swim-type">@swim_club.club_interest</h5>
+	<div class="clearfix"></div>
+	
+	<p>@Html.Raw(swim_club.description.ToString().Replace(Environment.NewLine, "<br />"))</p>
+	
+	<!-- /Club Description -->
+	</div>
+	
+	<div class="social-block">
+	<ul>
+    <li><a class="twitter" rel="nofollow" @if (swim_club.twitter != "#") { <text>target="_blank"</text> } href="@swim_club.twitter">@swim_club.twitter</a></li>
+	<li><a class="facebook" rel="nofollow" @if (swim_club.facebook != "#") { <text>target="_blank"</text> } href="@swim_club.facebook">@swim_club.facebook</a></li>
+	</ul>
+	
+	<div class="message"><a href="mailto:@swim_club.email" class="btn btn-warning" role="button">Email Club</a></div>
+	</div>
+	
+	
+		
+	
+			
+
+	<!-- /Content -->
+	</div>
+		 	
+</div>

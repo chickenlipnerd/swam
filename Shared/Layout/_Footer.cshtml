@@ -1,0 +1,36 @@
+﻿        <div id="footer-wrap">
+            <div class="footer-container container">
+                <div class="col-sm-3 block footer-logo">
+                    <img alt="" src="~/images/swamthat-footer-logo.png">
+                    <!-- Footer Echo Year (PHP) Change if needed -->
+                    <p>&copy; <?php echo date("Y") ?> SwamThat. All right reserved.</p>
+                </div>
+                <!-- 
+                This block should only be seen by members. 	
+                -->
+                <div class="col-sm-3 block time-submit">
+                    <span class="ico"></span>
+                    <h4>My Race Times</h4>
+                    <p>Add swim times to your profile. Build your race portfolio.</p>
+                    <p>@*<a href="swim-times.html" class="btn btn-primary" role="button">My Swim Times</a>*@<span class="btn btn-default" role="button">Coming Soon!</span></p>
+                </div>
+                <!-- 
+                Form should open in a lightbox? 	
+                -->
+                <div class="col-sm-3 block race-submit">
+                    <span class="ico"></span>
+                    <h4>Add My Swim</h4>
+                    <p>If you have a <em>race</em> that you would like to add, please submit it here.</p>
+                    <p><a href="@Href("~/event/AddEvent")" class="btn btn-primary" role="button">Add My Swim</a></p>
+                </div>
+                <!-- 
+                Form should open in a lightbox? 	
+                -->
+                <div class="col-sm-3 block club-submit">
+                    <span class="ico"></span>
+                    <h4>Add My Club</h4>
+                    <p>If you have a <em>club</em> that you would like to add, please submit it here.</p>
+                    <p><a href="@Href("~/club/AddClub")" class="btn btn-primary" role="button">Add My Club</a></p>
+                </div>
+            </div>
+        </div>

@@ -1,0 +1,49 @@
+﻿@*using System.Web.Routing;*@
+
+@{
+    WebSecurity.InitializeDatabaseConnection("SwamThat", "UserProfile", "UserId", "Email", autoCreateTables: true);
+
+    //RouteTable.Routes.MapPageRoute("EventDetailRoute", "event/detail/{event_id}/{event_title}", "~/event/detail.cshtml", false, new RouteValueDictionary { { "event_id", "1" }, { "event_title", "default" } });
+
+    // To let users of this site log in using their accounts from other sites such as Microsoft, Facebook, Twitter,
+    // you must update this site. For more information visit http://go.microsoft.com/fwlink/?LinkID=226949
+
+    //OAuthWebSecurity.RegisterMicrosoftClient(
+    //    clientId: "",
+    //    clientSecret: "");
+
+    //OAuthWebSecurity.RegisterTwitterClient(
+    //    consumerKey: "",
+    //    consumerSecret: "");
+
+    // swamthat facebook page
+    OAuthWebSecurity.RegisterFacebookClient(
+        appId: "1426966690886675",
+        appSecret: "e190aec2781dbaea87462638bb3c385a");
+
+    // From my developer account
+    //OAuthWebSecurity.RegisterFacebookClient(
+    //    appId: "264105487100596",
+    //    appSecret: "bb5195c5de8b5462ceef64d974a60a1d");
+
+    //OAuthWebSecurity.RegisterGoogleClient();
+
+    //WebMail.SmtpServer = "smtpout.secureserver.net";
+    WebMail.SmtpServer = "dedrelay.secureserver.net";
+    //WebMail.SmtpPort = 465;
+    WebMail.SmtpPort = 25;
+    //WebMail.EnableSsl = true;
+    //WebMail.UserName = "noreply@swamthat.com";
+    //WebMail.Password = "!Munchkin12";
+    WebMail.From = "noreply@swamthat.com";
+
+
+    //WebMail.SmtpServer = "smtp.gmail.com";
+    //WebMail.SmtpPort = 587;
+    //WebMail.EnableSsl = true;
+    //WebMail.UserName = "contact@studiofisheye.com";
+    //WebMail.Password = "5w@mth@tdotc0m";
+    //WebMail.From = "contact@studiofisheye.com";
+
+    // To learn how to optimize scripts and stylesheets in your site go to http://go.microsoft.com/fwlink/?LinkID=248973
+}

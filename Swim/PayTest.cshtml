@@ -1,0 +1,13 @@
+﻿@{
+    if (IsPost)
+    {
+        PaySample sample = new PaySample();
+
+        PayPal.AdaptivePayments.Model.PayRequest requestPay = sample.ChainPayment();
+        PayPal.AdaptivePayments.Model.PayResponse responsePaymentDetails = sample.PayAPIOperations(requestPay);
+    }
+}
+<form method="post">
+    <input type="hidden" name="pay-amt" value="20.00" />
+    <input type="submit" value="payment" />
+</form>

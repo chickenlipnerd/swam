@@ -1,0 +1,51 @@
+﻿@{
+    Page.Title = "Registration Confirmation Page";
+
+    string message = "";
+    var confirmationToken = Request["confirmationCode"];
+    bool accnt_confirm = false;
+    
+    WebSecurity.Logout();
+    if (!confirmationToken.IsEmpty()) {
+        if (WebSecurity.ConfirmAccount(confirmationToken)) {
+            message = "Registration Confirmed! Click on the log in tab to log in to the site.";
+            accnt_confirm = true;
+        } else {
+            message = "Could not confirm your registration info.";
+            accnt_confirm = false;
+        }
+    }
+}
+<div class="row">
+    <div class="content col-sm-12">
+        <hgroup class="title">
+            <h1>@Page.Title.</h1>
+            <!--<h3>Use the form below to confirm your account.</h3>-->
+        </hgroup>
+
+        @if (!message.IsEmpty()) {
+            <div class="alert @if (accnt_confirm) {<text>alert-success</text>} else {<text>alert-danger</text>}" role="alert">
+                <p>@message</p>
+            </div>
+        } else {
+            <div class="form">
+                <div class="row profile-information">
+                    <div class="form-item col-md-9">
+                        <form method="post">
+                            <fieldset>
+                                <legend>Confirmation Code</legend>
+                                <div class="col-sm-4 username">
+                                    <div class="form-group">
+                                        <label for="confirmationCode">Confirmation code</label>
+                                        <input class="form-control" type="text" id="confirmationCode" name="confirmationCode" />
+                                    </div>
+                                    <input class="btn btn-default" type="submit" value="Confirm" />
+                                </div>
+                            </fieldset>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>

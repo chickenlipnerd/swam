@@ -1,0 +1,211 @@
+﻿@{
+    Layout = null;
+    //Response.Expires = 0;
+
+    var db = Database.Open("SwamThat");
+    var query = "Select * from Swim where swim_in_event = @0 order by swim_id";
+    var evt_q = "Select active from event where event_id = @0";
+
+    // Uncomment following to show loading indications
+    //System.Threading.Thread.Sleep(2000);
+    // NB: Remember to remove it after you finish testing!
+
+    var evt_id = UrlData[0].AsInt(-1);
+    // TODO: Add error try/catch
+    var swim_results = db.Query(query, evt_id).ToList();
+    var event_status = db.QuerySingle(evt_q, evt_id);
+    
+    if (IsPost)
+    {
+        if (!string.IsNullOrEmpty(Request.Form["swim"]))
+        {
+            string [] swims_selected = Request.Form["swim"].Split(',');
+            string swims = Request.Form["swim"];
+            
+            HttpCookie selectedSwim = new HttpCookie("selected-swim");
+            selectedSwim.Expires = DateTime.Now.AddDays(1);
+            Response.Redirect("~/swim/swim-purchase-summary?event-id=" + evt_id + "&swims=" + swims);
+        }
+    }
+    
+    //// TODO: SAMPLE SNIPPETS - MOVE TO NEW FILE
+    //    if (IsPost)
+    //    {
+    //        if (!string.IsNullOrEmpty(Request.Form["swim"]))
+    //        {
+    //            System.Text.StringBuilder displayValues = new System.Text.StringBuilder();
+    //            System.Collections.Specialized.NameValueCollection postedValues = Request.Form;
+    //            String nextKey;
+    //            
+    //            for (int i = 0; i < postedValues.AllKeys.Length; i++)
+    //            {
+    //                nextKey = postedValues.AllKeys[i];
+    //                if(nextKey.Substring(0, 2) != "__")
+    //                {
+    //                    displayValues.Append(nextKey);
+    //                    displayValues.Append(" = ");
+    //                    displayValues.Append(postedValues[i]);
+    //                }
+    //            }
+    //
+    //            Response.Write(displayValues.ToString());
+    //        }
+    //    }
+    //    if (IsPost)
+    //    {
+    //        var evt_id = Request["evtid"].AsInt(-1);
+    //        if (evt_id == -1)
+    //        {
+    //            Response.End();
+    //        }
+    //
+    //        var addswim_result = db.Query(query, evt_id).ToList();
+    //
+    //        Json.Write(addswim_result, Response.Output);
+    //    }
+    //    else
+    //    {
+    //        //var addswim_result = db.Query(query, evt_id).ToList();
+    //    }
+
+    /// snippet to provide alert message for throwing errors
+    // string message = "";
+    // System.Text.StringBuilder sb = new System.Text.StringBuilder();
+    // sb.Append("<script type='text/javascript'>");
+    // sb.Append("window.onload=function() {");
+    // sb.Append("alert('");
+    // sb.Append(message);
+    // sb.Append("')};");
+    // sb.Append("</script)");
+    //
+    // var sc = new ClientScriptManager();
+    // sc.RegisterClientScriptBlock(this.GetType(), "alert", sb.ToString());
+    
+    //    if (IsPost)
+    //    {
+    //        string csName = "alert";
+    //        Type csType = this.GetType();
+    //        
+    //        ClientScriptManager cs = Page.ClientScript;
+    //        
+    //        if (!cs.IsClientScriptBlockRegistered(csName))
+    //        {
+    //            string message = Request.Form["swim"];
+    //            System.Text.StringBuilder csText = new System.Text.StringBuilder();
+    //            csText.Append("<script type='text/javascript'>");
+    //            csText.Append("window.onload=function() {");
+    //            csText.Append("alert('");
+    //            csText.Append(message);
+    //            csText.Append("')};");
+    //            csText.Append("</script)");
+    //
+    //            cs.RegisterClientScriptBlock(csType, csName, csText.ToString());
+    //            
+    //        }
+    //    }
+    ////END OF SAMPLE SNIPPETS
+
+}
+
+<form method="post">
+
+@{
+    var row_break = 4;
+    var i_row_count = 0;
+    foreach (var swim in swim_results)
+    {
+        if (row_break == i_row_count)
+        {
+            <div class="clearfix"></div>
+            i_row_count = 0;
+
+        }
+
+        i_row_count += 1;
+
+        <div class="col-sm-3 block">
+            @if (event_status.active)
+            {
+            <div class="checkbox">
+                <label><input type="checkbox" name="swim" value="swim_@swim.swim_id"> @swim.swim_title</label>
+            </div>
+            <div class="register-info">
+                <h5 class="register-title">Entry Fee <span>|</span> @string.Format("{0:C2}", swim.price)</h5>
+                <p>@swim.swim_description</p>
+            </div>
+            }
+            else
+            {
+            <div class="checkbox">
+                <label><input type="checkbox" disabled="disabled"> @swim.swim_title</label>
+            </div>
+            <div class="register-info">
+                <p>@swim.swim_description</p>
+            </div>
+            }
+	    </div>
+
+    }
+        
+    <div class="clearfix"></div>
+
+}
+
+@{
+    if (swim_results.Count > 0)
+    {
+        if (event_status.active) 
+        {
+            <div class="register-cta">
+                <button type="submit" class="btn btn-warning" role="button">Register for Event</button>
+                @*<span class="btn btn-default">Online registration available soon!</span>*@
+            </div>
+        }
+        else
+        {
+            <div class="register-cta">
+                <p>
+                    This swim event is not active at this time.<br />
+                    <a href="@Href("~/")" title="Back to Home Page">Back to home page.</a>
+                </p>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="register-cta">
+            <p>No swims have been added to this event</p>
+        </div>
+    }
+
+}
+<!-- Event Block -->
+</form>
+
+@if (IsPost)
+{
+    <text>
+<div class="modal fade" id="noswims-modal" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title">Modal title</h4>
+            </div>
+            <div class="modal-body">
+                <p>You must choose at least one swim&hellip;</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">OK</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+    </text>
+    if (string.IsNullOrEmpty(Request.Form["swim"]))
+    {
+        <script>
+            $("#noswims-modal").modal('toggle');
+        </script>    
+    }
+}

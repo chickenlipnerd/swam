@@ -1,0 +1,1480 @@
+
+body {
+    background-color: #003C5F;
+    color: #444;
+}
+
+a {
+	color: #00AEEF;
+	text-decoration: none;
+}
+
+a:hover {
+	color: #999;
+	text-decoration: none;
+}
+
+a {
+	-webkit-transition: all .3s ease-in-out;
+	-moz-transition: all .3s ease-in-out;
+	-o-transition: all .3s ease-in-out;
+	transition: all .3s ease-in-out;
+}
+
+.btn-primary {
+    background: url("../ico/blue-btn-bg.png") repeat scroll 0px 0px transparent;
+    border-color: #00aeef;
+    color: #00aeef;
+}
+
+	#footer-wrap .btn-primary,
+	.quick-links-wrap .btn-primary {
+	    color: #FFF;
+	}
+
+.btn-warning {
+    background: url("../ico/orange-btn-bg.png")  repeat scroll 0px 0px transparent;
+    border-color: #ffa800;
+    color: #ffa800;
+}
+
+.btn-danger {
+    background: url("../ico/red-btn-bg.png")  repeat scroll 0px 0px transparent;
+    border-color: #B92C28;
+    color: #B92C28;
+}
+
+.btn-success {
+    background: url("../ico/green-btn-bg.png")  repeat scroll 0px 0px transparent;
+    border-color: #3E8F3E;
+    color: #FFF;
+}
+
+.slides .btn-warning {
+	    padding-left: 30px;
+	    padding-right: 30px;
+	    color: #FFF;
+	}
+
+.btn-default {
+    background: url("")  repeat scroll 0px 0px transparent;
+    border-color: #CCC;
+    color: #666;
+    text-shadow: none;
+}
+
+	.slides .btn-default {
+	    background: url("")  repeat scroll 0px 0px transparent;
+	    border-color: #CCC;
+	    color: #FFF;
+	    text-shadow: none;
+	    padding-left: 30px;
+	    padding-right: 30px;
+	}
+	
+	.modal#RemoveModal .btn-default {
+	    background: url("")  repeat scroll 0px 0px transparent;
+	    border-color: #FFF;
+	    color: #FFF;
+	    text-shadow: none;
+	    padding-left: 10px;
+	    padding-right: 10px;
+	}
+	
+	.modal#RemoveModal .btn-default:hover {
+	    background: url("../ico/orange-btn-bg.png")  repeat scroll 0px 0px transparent;
+		border-color: #bd7d02;
+		color: #bd7d02;
+	}
+	
+
+.btn {
+    -moz-user-select: none;
+    /*background-image: url();
+    border: 1px solid rgba(0, 0, 0, 0);*/
+    border-radius: 20px;
+    cursor: pointer;
+    display: inline-block;
+    font-size: 14px;
+    font-weight: normal;
+    line-height: 1.42857;
+    margin-bottom: 0;
+    padding: 6px 12px;
+    text-align: center;
+    vertical-align: middle;
+    white-space: nowrap;
+    -webkit-transition: all .3s ease-in-out;
+	-moz-transition: all .3s ease-in-out;
+	-o-transition: all .3s ease-in-out;
+	transition: all .3s ease-in-out;
+}
+
+.btn-default, 
+.btn-primary, 
+.btn-success, 
+.btn-info, 
+.btn-warning, 
+.btn-danger {
+    box-shadow: none;
+    text-shadow: none;
+}
+
+
+
+
+
+/* Profile Login
+-------------------------------------- */
+
+.facebook-login a.facebook-button, .facebook-button {
+	display: block;
+	text-align: left;
+	text-indent: -9999em;
+	background: url("../css/img/facebook-button.png")  no-repeat scroll 0px 0px #003C5F;
+	height: 75px;
+	width: 200px;
+}
+
+
+.form-item.misc-information {
+	margin-top: 65px;
+	padding-bottom: 30px;
+}
+
+
+
+
+
+/* Header
+-------------------------------------- */
+
+#header-wrap {
+	background: none repeat scroll 0 0 transparent;
+}
+
+
+
+	/* Main Navigation */
+	.navbar {
+	    border: none;
+	    margin-bottom: 20px;
+	    min-height: 50px;
+	    position: relative;
+	}
+	
+	.navbar-inverse .navbar-nav li a {
+    	color: #FFF;
+	}
+	
+	.navbar-brand, 
+	.navbar-nav li a {
+	    text-shadow: none;
+	    color: #FFF;
+	}
+	
+	a.navbar-brand {
+	    width: 232px;
+	    height: 56px;
+	    direction: ltr;
+		display: block;
+		text-align: left;
+		text-indent: -9999em;
+		background: url("../css/img/swamthat-logo.png") no-repeat scroll 0px 0px transparent;
+		margin-right: 30px;
+	}
+	
+	.navbar-inverse {
+	    background-image: none;
+	    background-repeat: none;
+	}
+	
+	.navbar-inverse {
+	    background-color: #003C5F;
+	    border-color: #080808;
+	    margin: 20px 0px;
+	}
+	
+	.dropdown-menu {
+	    background-clip: padding-box;
+	    background-color: #FFFFFF;
+	    border: 1px solid rgba(0, 0, 0, 0.15);
+	    border-radius: 4px;
+	    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.176);
+	    display: none;
+	    float: left;
+	    font-size: 14px;
+	    left: 0;
+	    list-style: none outside none;
+	    margin: 2px 0 0;
+	    min-width: 160px;
+	    padding: 5px 0;
+	    position: absolute;
+	    top: 100%;
+	    z-index: 1000;
+	    color: #666;
+	}
+	
+	.navbar-inverse .navbar-nav .dropdown-menu  li a {
+	    color: #666;
+	}
+	
+	.navbar-nav li .dropdown-menu {
+	    border-top-left-radius: 0;
+	    border-top-right-radius: 0;
+	    margin-top: 25px;
+	}
+	
+	.navbar-inverse .navbar-nav .open a, 
+	.navbar-inverse .navbar-nav .open a:hover,
+	.navbar-inverse .navbar-nav .open a:focus {
+    background-color: transparent;
+    color: #FFFFFF;
+}
+
+
+/* Content Top 
+-------------------------------------- */
+
+.front #content-top-wrap {
+	background-color: transparent;
+	overflow: hidden;
+	color: #FFF;
+	height: 399px;
+}
+
+#content-top-wrap {
+	background-color: #F8F8F8;
+	overflow: hidden;
+	color: #FFF;
+}
+
+#content-top-wrap .container {
+	position: relative;
+}
+
+.flexslider {
+    background: none repeat scroll 0 0 transparent;
+    border: none;
+    border-radius: 0px;
+    box-shadow: none;
+    margin: 0 0 60px;
+    position: absolute;
+    z-index: 50;
+}
+
+.flexslider .slides {
+   height: 350px;
+    padding: 0px;
+}
+
+.flex-img {
+    height: 399px;
+    width: 100%;
+    position: absolute;
+    overflow: hidden;
+    clear: both;
+}
+
+@media (min-width: 1200px) {
+	.flex-img img {
+	    width: 100%;
+	}
+}
+
+	/* Slider Content */
+	
+	@media (min-width: 770px) {
+		.flexslider .slides .row {
+			margin-top: 100px;
+		}
+	}
+
+	
+	/* Slider CTA */
+	
+	@media (max-width: 767px) {
+		.slider-cta {
+			margin-top: 10px;
+		}
+	}
+	
+	.slider-cta ul, 
+	.slider-cta ol {
+		margin: 0px;
+		padding: 0px;
+		list-style: none outside none;
+	}
+	
+	.slider-cta li {
+		margin-top: 50px;
+		padding: 0px;
+		list-style: none outside none;
+		text-align: center;
+	}
+	
+.flex-direction-nav {
+	display: none;
+}
+
+
+/* Home Quick Links
+-------------------------------------- */
+
+.quick-links-wrap {
+	background-color: #d0d0d0;
+	border-bottom: 1px solid #FFF;
+}
+
+.quick-links-wrap .block {
+	padding-top: 20px;
+	padding-bottom: 20px;
+	text-align: center;
+}
+
+.quick-links-wrap .swim {
+	background: url("../ico/search-ico.png") no-repeat scroll top center transparent;
+	padding-top: 140px;
+}
+
+.quick-links-wrap .calculator {
+	background: url("../ico/calculator-icon.png") no-repeat scroll top center #e5e5e5;
+	padding-top: 140px;
+}
+
+.quick-links-wrap .club {
+	background: url("../ico/group-ico.png") no-repeat scroll top center transparent;
+	padding-top: 140px;
+}
+
+
+/* Main Content
+-------------------------------------- */
+
+#container-wrap {
+    background: none repeat scroll 0 0 #F8F8F8;
+    padding: 20px 0;
+}
+
+	/* Race Lists */
+	
+	.race-list ul, 
+	.race-list ol {
+		margin: 0px;
+		padding: 0px;
+		list-style: none outside none;
+	}
+	
+	.race-list li {
+		margin-top: 10px;
+		padding: 0px 0px 10px 0px;
+		list-style: none outside none;
+		border-bottom: 1px solid #CCC;
+	}
+	
+	/* Race Lists */
+
+	.club-list ul, 
+	.club-list ol {
+		margin: 0px;
+		padding: 0px;
+		list-style: none outside none;
+	}
+	
+	.club-list li {
+		margin-top: 10px;
+		padding: 0px 0px 10px 0px;
+		list-style: none outside none;
+		border-bottom: 1px solid #ccc;
+		color: #666;
+	}
+	
+	.club-list li a {
+		color: #666;
+	}
+	
+	li .state {
+		color: #999;
+	}
+	
+	li .state span {
+		color: #00AEEF;
+		margin: 0px 5px;
+	}
+	
+	
+	
+	/* US Map */
+	
+	@media (max-width: 767px) {
+		.map-select {
+			display: none;
+		}
+	}
+	
+	
+	
+	.map-select{
+		width: 100%;
+		position: relative;
+	}
+	
+	
+	
+	.map-header {
+		background: url("./img/usa-top.png") no-repeat scroll center bottom transparent;
+		width: 100%;
+		height: 195px;
+	}
+	
+		/* Map Content Open 
+		
+		These styles apply to the open map only!
+		-------------------------------- */
+		
+		.map-content {
+			background-color: #CCC;
+			height: 640px;
+			position: relative;
+			overflow: hidden;
+			display: block;
+		}
+		
+		.map-content .gradient-top {
+			background: url("./img/gradient-top.png") repeat-x scroll bottom left transparent;
+			height: 21px;
+			display: block;
+			z-index: 400;
+			clear: both;
+		}
+		
+			/* Map Content Column */
+			 
+			.map-content .map-content-header {
+				height: 173px;
+			}
+			
+			.map-content .header-row-large {
+				width: 75%;
+				height: 173px;
+				float: left;
+			}
+			
+			.map-content .header-row-small {
+				width: 25%;
+				height: 173px;
+				background-color: #E5E5E5;
+				float: left;
+				text-align: center;
+				padding-top: 50px;
+			}
+			
+			
+			.map-content-header .location {
+				width: 55%;
+				float: left;
+				margin-top: 20px;
+			}
+			
+			.map-content-header .state-ico {
+				display: block;
+				float: left;
+				height: 50px;
+				margin: 20px 30px;
+				overflow: hidden;
+				width: 50px;
+				background: url("../ico/state-ico.png") no-repeat scroll -200px 0 rgba(0, 0, 0, 0);
+				margin-top: 20px;
+			}
+
+			
+			.map-content-header .event-local {
+				width: 45%;
+				float: left;
+				margin-top: 20px;
+				border-left: 1px solid #999;
+				padding-left: 30px;
+			}
+			
+			.map-content-header .weather-temp {
+				width: 50%;
+			}
+			
+			.map-content-header .weather-temp h2 {
+				margin-bottom: 0px;
+			}
+			
+			.weather-city {
+				color: #999999;
+				float: left;
+				width: 50%;
+			}
+			
+			.map-content .column {
+				width: 25%;
+				height: 467px;
+				float: left;
+				margin: 0px;
+				text-align: center;
+			}
+			
+			.map-content .column .content {
+				padding: 10px;
+				width: 100%;
+				text-align: left;
+				margin-top: 90px;
+			}
+			
+			.map-content .row-latest {
+				margin-bottom: 10px;
+				padding-bottom: 10px;
+				border-bottom: 1px solid #CCC;
+			}
+			
+			.map-content .row-latest p {
+				margin: 0px;
+				padding: 0px;
+				color: #666;
+			}
+			
+			.map-content .row-latest p.row-title {
+				margin: 0px;
+				padding: 0px;
+				color: #444;
+				font-weight: bold;
+			}
+			
+			.map-content .column .btn-primary {
+				color: #FFF;
+			}
+			
+			.map-content .column.triathlon {
+				background: url("./img/row-gradient.png") repeat-x scroll left bottom transparent;
+			}
+			
+			.map-content .column.first {
+				margin-left: 0px;
+			}
+			
+			.map-content .column.last {
+				margin-right: 0px;
+			}
+			
+			.column-ico {
+				height: 100px;
+				width: auto;
+			}
+	
+			.column-ico.sponsor {
+				background: url("./img/open-water-ico.png") no-repeat scroll center center transparent;
+			}
+			
+			.column-ico.triathlon {
+				background: url("./img/triathlon-ico.png") no-repeat scroll center center transparent;
+			}
+			
+			.column-ico.pool {
+				background: url("./img/pool-ico.png") no-repeat scroll center center transparent;
+			}
+			
+			.triathlon .map-row {
+				border-bottom: 1px dashed #ccc;
+			}
+			
+			.map-row {
+				height: 75px;
+				border-bottom: 1px dashed #E5E5E5;
+				padding: 15px 0px;
+				overflow: hidden;
+			}
+			
+			.map-row.first,
+			.map-row.last {
+				border-bottom: none;
+			}
+			
+			.map-row p,
+			.map-row h3 {
+				margin: 0px;
+				padding: 0px;
+			}
+			
+			.map-content .column.last {
+				background-color: #E5E5E5;
+			}
+
+
+		.map-content .gradient-bottom {
+			background: url("./img/gradient-bottom.png") repeat-x scroll bottom left transparent;
+			height: 21px;
+			position: ;
+			display: block;
+			z-index: 200;
+			clear: both;
+		}
+		
+	
+	
+	
+	.map-footer {
+		background: url("./img/usa-bottom.png") no-repeat scroll center top transparent;
+		width: 100%;
+		height: 332px;
+	}
+	
+	
+	@media (max-width: 767px) {
+		.map-select img {
+			display: none;
+		}
+	}
+	
+	
+	/* Modals 
+	-------------------------------- */
+	
+	.modal#RemoveModal .modal-content {
+		background-color: #ffa800;
+		color: #FFF;
+	}
+	
+	.modal-body {
+    	padding: 0px 20px;
+    	position: relative;
+	}
+	
+	.modal#RemoveModal .modal-header {
+	    border-bottom: none;
+	    min-height: 16.4286px;
+	    padding: 15px 15px 0px 15px;
+	}
+	
+	.modal-header {
+	    border-bottom: none;
+	}
+	
+	.modal-footer {
+	    border-top: none;
+	    margin-top: 0px;
+	    padding: 20px;
+	    text-align: right;
+	}
+	
+	.row.modal-button {
+		color: #CCC;
+	}
+	
+	
+	/* Event Page 
+	-------------------------------- */
+	
+	.event-branding {
+		margin-top: -20px;
+		overflow: hidden;
+		position: relative;
+	}
+	
+	.event-branding .title-image {
+		max-height: 405px;
+		overflow: hidden;
+	}
+
+	.event-branding .title-image img {
+		width: 100%;
+	}
+	
+	.event-branding .event-logo {
+		height: 140px;
+		width: 140px;
+		overflow: hidden;
+		display: block;
+		background-color: #FFF;
+		position: absolute;
+		z-index: 200;
+	}
+	
+	
+	/* Weather */
+	
+	.location-weather {
+		overflow: hidden;
+	}
+	
+	.location-weather img {
+		float: left;
+		height: 100px;
+		width: 100px;
+		overflow: hidden;
+		display: block;
+		
+	}
+	
+	.weather-temp {
+		float: left;
+		color: #999;
+	}
+		
+	@media (min-width: 767px) {
+		.location-weather {
+			border-right: 1px solid #CCC;
+		}
+	}
+		
+	@media (max-width: 767px) {
+		.local {
+			border-top: 1px dashed #CCC;
+			border-bottom: 1px dashed #CCC;
+		}
+	}
+	
+	.map-local {
+		text-align: center;
+		padding-top: 30px;
+	}
+	
+	
+	/* Event Description */
+	
+	.event-description {
+		background-color: #FFF;
+		padding: 10px;
+		margin-top: 30px;
+	}
+	
+		/* Event Date */
+		
+		.event-date {
+			margin: 0px 30px 0px -10px;
+			text-align: right;
+			width: 80px;
+			color: #00AEEF;
+			float: left
+		}
+		
+		h1.day {
+			margin: 0px;
+			color: #FFF;
+			background-color: #00AEEF;
+			font-size: 3.5em;
+			padding: 0px 10px 0px 0px;
+		}
+		
+	h5.swim-type {
+		color: #999;
+	}
+	
+	/* Event Registration */
+	
+	.events-register {
+		background-color: #FFF;
+		padding: 10px;
+		margin-top: 30px;
+		overflow: hidden;
+	}
+	
+	.register-title {
+		color: #999;
+	}
+	
+	.register-title span {
+		color: #00AEEF;
+	}
+	
+	.register-cta {
+		margin: 30px 0px;
+		text-align: center;
+		display: block;
+	}
+	
+	
+	
+	
+
+
+
+/* State Swim List 
+-------------------------------------- */
+
+	
+.list-header {
+	margin-bottom: 70px;
+}
+	
+.list-location {
+	overflow: hidden;
+}
+	
+@media (min-width: 767px) {
+	.list-location {
+		border-left: 1px solid #CCC;
+	}
+}
+	
+@media (max-width: 767px) {
+	.local {
+		border-top: 1px dashed #CCC;
+		border-bottom: 1px dashed #CCC;
+	}
+}
+	
+.list-location h3 {
+	margin-bottom: 0px;
+	color: #999;
+}
+
+.list-location p span  {
+	color: #CCC;
+	margin: 0px 5px;
+}
+	
+.state-ico {
+	float: left;
+	display: block;
+	overflow: hidden;
+	width: 50px;
+	height: 50px;
+	margin: 20px 30px;
+}
+	
+		/* State List Headers ICONS */
+		
+		.alabama .state-ico {
+			background: url("../ico/state-ico.png") no-repeat scroll 0px 0px transparent;
+		}
+		
+		.alaska .state-ico {
+			background: url("../ico/state-ico.png") no-repeat scroll -50px 0px transparent;
+		}
+		
+		.arizona .state-ico {
+			background: url("../ico/state-ico.png") no-repeat scroll -100px 0px transparent;
+		}
+		
+		.arkansas .state-ico {
+			background: url("../ico/state-ico.png") no-repeat scroll -150px 0px transparent;
+		}
+		
+		.california .state-ico {
+			background: url("../ico/state-ico.png") no-repeat scroll -200px 0px transparent;
+		}
+		
+		.colorado .state-ico {
+			background: url("../ico/state-ico.png") no-repeat scroll -250px 0px transparent;
+		}
+		
+		.connenticut .state-ico {
+			background: url("../ico/state-ico.png") no-repeat scroll -300px 0px transparent;
+		}
+		
+		.delaware .state-ico {
+			background: url("../ico/state-ico.png") no-repeat scroll -350px 0px transparent;
+		}
+		
+		.florida .state-ico {
+			background: url("../ico/state-ico.png") no-repeat scroll -400px 0px transparent;
+		}
+		
+		.georgia .state-ico {
+			background: url("../ico/state-ico.png") no-repeat scroll -450px 0px transparent;
+		}
+		
+		.hawaii .state-ico {
+			background: url("../ico/state-ico.png") no-repeat scroll -500px 0px transparent;
+		}
+		
+		.idaho .state-ico {
+			background: url("../ico/state-ico.png") no-repeat scroll -550px 0px transparent;
+		}
+		
+		.illinois .state-ico {
+			background: url("../ico/state-ico.png") no-repeat scroll 0px -50px transparent;
+		}
+		
+		.indiana .state-ico {
+			background: url("../ico/state-ico.png") no-repeat scroll -50px -50px transparent;
+		}
+		
+		.iowa .state-ico {
+			background: url("../ico/state-ico.png") no-repeat scroll -100px -50px transparent;
+		}
+		
+		.kansas .state-ico {
+			background: url("../ico/state-ico.png") no-repeat scroll -150px -50px transparent;
+		}
+		
+		.kentucky .state-ico {
+			background: url("../ico/state-ico.png") no-repeat scroll -200px -50px transparent;
+		}
+		
+		.louisiana .state-ico {
+			background: url("../ico/state-ico.png") no-repeat scroll -250px -50px transparent;
+		}
+		
+		.main .state-ico {
+			background: url("../ico/state-ico.png") no-repeat scroll -300px -50px transparent;
+		}
+		
+		.maryland .state-ico {
+			background: url("../ico/state-ico.png") no-repeat scroll -350px -50px transparent;
+		}
+		
+		.massachusetts .state-ico {
+			background: url("../ico/state-ico.png") no-repeat scroll -400px -50px transparent;
+		}
+		
+		.michigan .state-ico {
+			background: url("../ico/state-ico.png") no-repeat scroll -450px -50px transparent;
+		}
+		
+		.minnesota .state-ico {
+			background: url("../ico/state-ico.png") no-repeat scroll -500px -50px transparent;
+		}
+		
+		.mississippi .state-ico {
+			background: url("../ico/state-ico.png") no-repeat scroll -550px -50px transparent;
+		}
+		
+		.missouri .state-ico {
+			background: url("../ico/state-ico.png") no-repeat scroll 0px -100px transparent;
+		}
+		
+		.montana .state-ico {
+			background: url("../ico/state-ico.png") no-repeat scroll -50px -100px transparent;
+		}
+		
+		.nebraska .state-ico {
+			background: url("../ico/state-ico.png") no-repeat scroll -100px -100px transparent;
+		}
+		
+		.nevada .state-ico {
+			background: url("../ico/state-ico.png") no-repeat scroll -150px -100px transparent;
+		}
+		
+		.new-hampshire .state-ico {
+			background: url("../ico/state-ico.png") no-repeat scroll -200px -100px transparent;
+		}
+		
+		.new-jersey .state-ico {
+			background: url("../ico/state-ico.png") no-repeat scroll -250px -100px transparent;
+		}
+		
+		.new-mexico .state-ico {
+			background: url("../ico/state-ico.png") no-repeat scroll -300px -100px transparent;
+		}
+		
+		.new-york .state-ico {
+			background: url("../ico/state-ico.png") no-repeat scroll -350px -100px transparent;
+		}
+		
+		.north-carolina .state-ico {
+			background: url("../ico/state-ico.png") no-repeat scroll -400px -100px transparent;
+		}
+		
+		.north-dakoda .state-ico {
+			background: url("../ico/state-ico.png") no-repeat scroll -450px -100px transparent;
+		}
+		
+		.ohio .state-ico {
+			background: url("../ico/state-ico.png") no-repeat scroll -500px -100px transparent;
+		}
+		
+		.oklahoma .state-ico {
+			background: url("../ico/state-ico.png") no-repeat scroll -550px -100px transparent;
+		}
+		
+		.oregon .state-ico {
+			background: url("../ico/state-ico.png") no-repeat scroll 0px -150px transparent;
+		}
+		
+		.pennsylvania .state-ico {
+			background: url("../ico/state-ico.png") no-repeat scroll -50px -150px transparent;
+		}
+		
+		.rhode-island .state-ico {
+			background: url("../ico/state-ico.png") no-repeat scroll -100px -150px transparent;
+		}
+		
+		.south-carolina .state-ico {
+			background: url("../ico/state-ico.png") no-repeat scroll -150px -150px transparent;
+		}
+		
+		.south-dakota .state-ico {
+			background: url("../ico/state-ico.png") no-repeat scroll -200px -150px transparent;
+		}
+		
+		.tennessee .state-ico {
+			background: url("../ico/state-ico.png") no-repeat scroll -250px -150px transparent;
+		}
+		
+		.texas .state-ico {
+			background: url("../ico/state-ico.png") no-repeat scroll -300px -150px transparent;
+		}
+		
+		.utah .state-ico {
+			background: url("../ico/state-ico.png") no-repeat scroll -350px -150px transparent;
+		}
+		
+		.vermont .state-ico {
+			background: url("../ico/state-ico.png") no-repeat scroll -400px -150px transparent;
+		}
+		
+		.virginia .state-ico {
+			background: url("../ico/state-ico.png") no-repeat scroll -450px -150px transparent;
+		}
+		
+		.washington .state-ico {
+			background: url("../ico/state-ico.png") no-repeat scroll -500px -150px transparent;
+		}
+		
+		.west-virginia .state-ico {
+			background: url("../ico/state-ico.png") no-repeat scroll -550px -150px transparent;
+		}
+		
+		.wisconson .state-ico {
+			background: url("../ico/state-ico.png") no-repeat scroll 0px -200px transparent;
+		}
+		
+		.wyoming .state-ico {
+			background: url("../ico/state-ico.png") no-repeat scroll -50px -200px transparent;
+		}
+		
+		
+		
+		
+		
+		
+	/* Lists */
+	
+	.list-page .list-row {
+		margin-bottom: 10px;
+		padding-bottom: 10px;
+		border-bottom: 1px solid #CCC;
+	}
+	
+	.list-page .list-row p.state {
+		color: #999;
+	}
+	
+	.list-page .list-row p.state span {
+		color: #00AEEF;
+		margin: 0px 5px;
+	}
+	
+	.list-page .list-row .list-cta {
+		text-align: center;
+		margin-top: 20px;
+	}
+	
+	
+	
+/* Profile
+-------------------------------------- */	
+	
+	/* Profile Left Column */
+	
+	.left-content-top {
+		margin-top: 40px;
+		margin-bottom: 70px;
+	}
+	
+	@media screen and (min-width:768px){
+		.left-content-top {
+			margin-left: 180px;
+			margin-top: 40px;
+			margin-bottom: 0px;
+		}
+	}
+	
+	.profile-column-left .about {
+		padding: 10px;
+		background-color: #FFF;
+		position: relative;
+		margin-top: 30px;
+	}
+	
+	.profile-image {
+		float: left;
+		background-color: #FFF;
+		display: block;
+		margin: -50px 20px 20px 0px;
+		border: 5px solid #FFF;
+	}
+	
+	.secondary-info,
+	.user-title {
+		color: #999;
+		margin-bottom: 30px;
+	}
+	
+	.social-block {
+		margin: 0px 0px 30px 0px;
+		background-color: #FFF;
+		overflow: hidden;
+		border-top: 1px solid #e5e5e5;
+	}
+	
+		/* Social Links */
+		
+		.social-block ul, 
+		.social-block ol {
+			margin: 0px;
+			padding: 0px;
+			list-style: none outside none;
+		}
+		
+		.social-block li {
+			margin: 0px;
+			padding: 0px;
+			list-style: none outside none;
+		}
+		
+		.social-block li a {
+			display: block;
+			float: left;
+			width: 83px;
+			height: 83px;
+			overflow: hidden;
+			padding: 0px;
+			margin: 0px;
+			border-right: 1px solid #e5e5e5;
+			direction: ltr;
+			display: block;
+			overflow: hidden;
+			text-align: left;
+			text-indent: -9999em;
+		}
+		
+		.social-block li a:hover {
+			background-color: #E5E5E5;
+		}
+		
+		.social-block li a:hover,
+		.social-block li a:active {
+			background-color: #e5e5e5;
+		}
+		
+		.social-block li .twitter {
+			background: url("../ico/small-ico.png") no-repeat scroll 0px 0px transparent;
+		}
+		
+		.social-block li .facebook {
+			background: url("../ico/small-ico.png") no-repeat scroll -83px 0px transparent;
+		}
+		
+		.message {
+			float: left;
+			margin: 25px 0px 0px 30px;
+		}
+	
+		
+		
+		/* Interests */
+	
+		.interests {
+			background-color: #FFF;
+			overflow: hidden;
+		}
+		
+		.interests h5 {
+			display: block;
+			float: left;
+			padding: 0px;
+			margin: 0px;
+			color: #999;
+
+		}
+		
+		.interests ul, 
+		.interests ol {
+			margin: 0px;
+			padding: 0px;
+			list-style: none outside none;
+			float: right;
+		}
+		
+		.interests li {
+			margin: 0px;
+			padding: 0px;
+			list-style: none outside none;
+			text-align: center;
+			float: left;
+		}
+		
+		.interests li a {
+			text-decoration: none;
+			display: block;
+			text-align: center;
+			height: 83px;
+			width: 100px;
+			border-left: 1px solid #e5e5e5;
+			float: left;
+			padding-top: 30px;
+			padding-left: 10px;
+			padding-right: 10px;
+			background: url("../ico/blue-down-arrow.png") no-repeat scroll bottom left transparent;
+		}
+
+		.interests li a:hover {
+			background-color: #E5E5E5;
+		}
+		
+		/* Races */
+		
+		.profile .race-list {
+			margin: 30px 0px;
+		}
+		
+
+	
+	/* Profile Right Column */
+	
+	@media (min-width: 960px){
+		.column-right .profile-header-image {
+			margin-top: -20px;
+		}
+	}
+	
+	
+	.column-right .profile-header-image img {
+		width: 100%;
+		height: auto;
+	}
+	
+	.profile-header-image {
+		margin: 0px;
+		padding: 0px;
+	}
+	
+	.user-open-water-times {
+		background-color: #333;
+		overflow: hidden;
+	}
+	
+	.user-triathlon-times {
+		background-color: #444;
+		overflow: hidden;
+	}
+	
+	.user-pool-times {
+		background-color: #666;
+		overflow: hidden;
+	}
+	
+	
+	.times-title-block {
+		clear: both;
+		width: 100%;
+		overflow: hidden;
+		padding: 0px;
+		margin: 0px;
+	}
+	
+	.times-title-block h6 {
+		background-color: #00aeef;
+		color: #FFF;
+		float: left;
+		width: 83px;
+		display: block;
+		padding: 50px 10px 10px 10px;
+		margin: 0px 30px 20px 0px;
+	}
+	
+	.times-title-block h4 {
+		margin-top: 50px;
+		color: #CCC;
+	}
+
+	.column-right .swim-times {
+		width: 262px;
+		color: #CCC;
+		float: left;
+		padding: 10px;
+	}
+	
+	
+	/* Graphs */
+	
+	.graph-container {
+		width: 104px;
+		height: 103px;
+		position: relative;
+		float: left;
+		overflow: hidden;
+		display: block;
+		margin-right: 10px;
+	}
+			
+	.year {
+		color: #CCC;
+		position: absolute;
+		margin-top: 5px;
+		margin-left: 25px;
+		font-weight: bold;
+	}
+	
+	.description-copy {
+		padding-top: 50px;
+	}
+	
+	
+	/* Race Times */
+	
+	.time-wrap {
+		text-align: left;
+		white-space: nowrap;
+		color: #CCC;
+	}
+	
+	.time-wrap .container-inline {
+		float: left;
+	}
+	
+		.time-wrap span.fastest-time {
+			color: #0d9b02;
+			margin-left: 5px;
+		}
+		
+		.time-wrap span.my-time{
+			color: #00AEEF;
+			margin-left: 5px;
+		}
+		
+		.time-wrap span.last-time{
+			color: #ffa800;
+			margin-left: 5px;
+		}
+		
+	.time-wrap p {
+		margin: 0px;
+		padding: 0px;
+	}
+	
+	.hour-field,
+	.minutes-field,
+	.seconds-field,
+	.hundredths-field {
+		margin: 0px;
+		padding: 0px;
+		float: left;
+	}
+
+	
+
+
+
+
+
+/* Bottom Content
+-------------------------------------- */
+
+#bottom-container-wrap {
+    background: none repeat scroll 0 0 #E5E5E5;
+    border-top: 1px solid #CCC;
+    padding: 20px 0;
+}
+
+
+
+/* Sidebars
+-------------------------------------- */
+
+.sidebar {
+	background-color: #CCC;
+}
+
+
+
+
+
+
+/* Footer
+-------------------------------------- */
+
+#footer-wrap {
+	margin: 50px 0px;
+	color: #6ab2dc;
+}
+
+#footer-wrap .footer-logo img {
+	margin: 0px 0px 20px 0px;
+}
+
+#footer-wrap .block {
+	text-align: center;
+	margin-top: 30px;
+	margin-bottom: 30px;
+}
+
+#footer-wrap .block .ico {
+	width: 83px;
+	height: 83px;
+	display: block;
+	overflow: hidden;
+	margin: 0px auto;
+}
+
+.time-submit span.ico {
+	background: url("../ico/small-ico.png") no-repeat scroll -415px 0px transparent;
+}
+
+.race-submit span.ico {
+	background: url("../ico/small-ico.png") no-repeat scroll -332px 0px transparent;
+}
+
+.club-submit span.ico {
+	background: url("../ico/small-ico.png") no-repeat scroll -249px 0px transparent;
+}
+
+
+
+
+/* Form Items
+-------------------------------------- */
+
+.form-item {
+	margin: 30px 0px;
+}
+
+
+@media (min-width: 650px){
+	.form-item fieldset {
+		background-color: #FFF;
+		border: 1px solid #CCC;
+		padding: 20px;
+	}
+}
+
+legend {
+    -moz-border-bottom-colors: none;
+    -moz-border-left-colors: none;
+    -moz-border-right-colors: none;
+    -moz-border-top-colors: none;
+    border-color: -moz-use-text-color -moz-use-text-color #E5E5E5;
+    border-image: none;
+    border-style: none none solid;
+    border-width: 0px;
+    color: #333333;
+    display: block;
+    font-size: 21px;
+    line-height: inherit;
+    margin-bottom: 0px;
+    padding: 20px;
+    width: auto;
+}
+
+span.field-validation-error {
+    color: #ff0000;
+    font-weight: bold;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+

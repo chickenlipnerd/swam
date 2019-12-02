@@ -1,0 +1,72 @@
+﻿@functions{
+
+    // XML
+    private static string WeatherServiceXML = "http://weather.yahooapis.com/forecastrss?w={0}";
+    // JSON -- http://query.yahooapis.com/v1/public/yql?q=select%20item%20from%20weather.forecast%20where%20location%3D%2268005%22&format=json
+    private static string WeatherServiceJSON = "http://query.yahooapis.com/v1/public/yql?q=select%20item%20from%20weather.forecast%20where%20woeid%3D%22{0}%22&format=json";
+
+    // XML
+    private static string WoeidServiceXML = "http://where.yahooapis.com/v1/places.q('{0}%20{1}%20usa')?appid=2lfsAM_V34EeEt02WedPapA_jwqBorT5kHkHTjYzizTTBOIaed7_NIbRqGrPLv_xQQnHfng-";
+    // JSON
+    private static string WoeidServiceJSON = "http://where.yahooapis.com/v1/places.q('{0}%20{1}%20usa')?format=json&appid=2lfsAM_V34EeEt02WedPapA_jwqBorT5kHkHTjYzizTTBOIaed7_NIbRqGrPLv_xQQnHfng-";
+
+    // XML
+    public static string GetWeoidXML(string city, string state) {
+        string serviceURL = string.Format(WoeidServiceXML, city, state);
+        string dwml = string.Empty;
+        
+        System.Net.WebClient webClient = new System.Net.WebClient();
+        dwml = webClient.DownloadString(serviceURL);
+        System.Xml.Linq.XDocument xdoc = System.Xml.Linq.XDocument.Parse(dwml);
+        var woeid = xdoc.Descendants("places.place").FirstOrDefault();
+        if (woeid == null)
+        {
+            return string.Empty;
+        }
+        else
+        { 
+            return woeid.Value;
+        }
+    }
+
+    public static string GetWoeidJSON(string city, string state)
+    {
+        string serviceURL = string.Format(WoeidServiceJSON, city, state);
+        string jsondata = string.Empty;
+        string woeid = string.Empty;
+
+        System.Net.WebClient webClient = new System.Net.WebClient();
+        jsondata = webClient.DownloadString(serviceURL);
+        var result = Json.Decode(jsondata);
+        var place = new List<dynamic>(result.places.place);
+        return string.Format(WeatherServiceJSON, Convert.ToString(place.FirstOrDefault().woeid));                
+    }
+    
+    // JSON
+    public static string GetWeatherJSON(string city, string state)
+    {
+        string serviceURL = string.Format(WoeidServiceJSON, city, state);
+        string jsondata = string.Empty;
+        string woeid = string.Empty;
+
+        System.Net.WebClient webClient = new System.Net.WebClient();
+        jsondata = webClient.DownloadString(serviceURL);
+        var result = Json.Decode(jsondata);
+        var place = new List<dynamic>(result.places.place);
+        if (place != null)
+        {
+            //return Convert.ToString(place.FirstOrDefault().woeid);
+            string weatherServiceUrl = string.Format(WeatherServiceJSON, Convert.ToString(place.FirstOrDefault().woeid));
+            //return webClient.DownloadString(weatherServiceUrl);
+            jsondata = webClient.DownloadString(weatherServiceUrl);
+            //var data = Json.Decode(jsondata);
+            //return data;
+            //var w_query = data.query.results.channel.item.condition.description;
+            return jsondata;
+        }
+        else
+        {
+            return "No return from weather";
+        }
+    }
+}

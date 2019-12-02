@@ -1,0 +1,279 @@
+@* Remove this section if you are using bundling *@
+@section Scripts {
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+}
+
+@{
+    Page.Title = "Swim Event";
+    Global.BodyClass = "swim-details event page";
+
+    var event_id = UrlData[0].AsInt(-1);
+    var db = Database.Open("SwamThat");
+
+    var swim_event = db.QuerySingle("SELECT * FROM event WHERE event_id = @0", event_id);
+
+    var swim_state = db.QuerySingle("SELECT name FROM us_states where StateId = @0", swim_event.event_state);
+
+    // Check if is owner of the event
+    bool user_is_owner = false;
+    if (swim_event.event_by_uid == WebSecurity.CurrentUserId)
+    {
+        user_is_owner = true;
+    }
+    
+    string state_val = swim_state.name;
+    if (string.IsNullOrEmpty(state_val))
+    {
+        state_val = "No State Specified";
+    }
+
+    Page.Title += " - " + swim_event.event_title;
+
+    var jsondata = Weather.GetWeatherJSON(swim_state.name, swim_event.event_city);
+    var data = Json.Decode(jsondata);
+    List<dynamic> forecast = null;
+    if (data.query.results.channel.item.forecast != null)
+    {
+        forecast = new List<dynamic>(data.query.results.channel.item.forecast);
+    }
+
+    string weather_image_url = string.Empty;
+    string weather_code = string.Empty;
+    string weather_temp = string.Empty;
+    dynamic weather_result = null;
+    if (forecast != null)
+    {
+        weather_result = forecast.FirstOrDefault();
+        weather_image_url = Href("~/theme/ico/weather/" + weather_result.code + ".png");
+        //weather_image_url = "http://l.yimg.com/a/i/us/we/52/" + weather_result.code + ".gif";
+        weather_temp = weather_result.high;
+    }
+    else
+    {
+        weather_image_url = "~/theme/ico/weather-ico.png";
+        weather_temp = "Weather Not Available";
+    }
+
+    string map_url = swim_event.google_map_url;
+    if (string.IsNullOrEmpty(map_url))
+    {
+        map_url = string.Format("https://www.google.com/maps/place/{0},+{1}/@{2},{3},14z",
+            swim_event.event_city, swim_state.name, data.query.results.channel.item.lat, data.query.results.channel.item["long"]);
+    }
+
+    System.Globalization.DateTimeFormatInfo mfi = new System.Globalization.DateTimeFormatInfo();
+    DateTime d = Convert.ToDateTime(swim_event.event_date);
+    var event_month = string.Format("{0}", mfi.GetMonthName(d.Month));
+    var event_day = string.Format("{0}", d.Day);
+    var event_year = string.Format("{0}", d.Year);
+}
+
+<div id="fb-root"></div>
+<script>(function (d, s, id) {
+    var js, fjs = d.getElementsByTagName(s)[0];
+    if (d.getElementById(id)) return;
+    js = d.createElement(s); js.id = id;
+    js.src = "//connect.facebook.net/en_US/sdk.js#xfbml=1&appId=1426966690886675&version=v2.0";
+    fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+
+	<div class="row">
+	<div class="content col-sm-9">
+	<!-- Event Branding -->
+	<div class="event-branding">
+	
+		 
+		@*Event admin is able to upload a logo which would automatically size to 140px X 140px.  *@
+		
+        @if (!string.IsNullOrEmpty(swim_event.event_branding_url))
+        {
+		    <div class="event-logo">
+		    <img src="@Href(swim_event.event_branding_url)" />
+		    </div>
+        }
+		
+		@*Event admin is able to upload a title image which would automatically size to 850px X 405px.*@  
+		
+		<div class="title-image">
+		<img src="@Href(swim_event.event_banner_url)" />
+		</div>
+		
+		<!-- Event Location/Weather -->
+		<div class="row event-local">
+		
+		<div class="col-sm-4 location-weather">
+		<img class="symbol-ico" src="@weather_image_url">
+        @{
+            //var jsondata = Weather.GetWeatherJSON("omaha", "ne");
+            //var data = Json.Decode(jsondata);
+            //@Html.Raw(data.query.results.channel.item.description)
+            
+        }
+
+        <script>
+
+        </script>
+
+		<div class="weather-temp"><h2>@weather_temp&#730;</h2></div>
+		</div>
+		
+		<div class="col-sm-4 local">
+		<h3>@swim_event.event_city</h3>
+		<p>@state_val</p>
+		</div>
+		
+		<div class="col-sm-4 map-local">
+		<p><a href="@map_url" target="_blank" class="btn btn-primary" role="button">Map Location</a></p>
+		</div>
+				
+		</div>
+		<!-- /Event Location/Weather -->
+	
+	<!-- /Event Branding -->
+	</div>
+	
+	
+	<!-- Event Description -->
+	<div class="event-description">
+	<div class="event-date">
+		<p class="month">@event_month</p>
+		<h1 class="day">@event_day</h1>
+		<p class="year">@event_year</p>
+	</div>
+	<h1 class="page-title">@swim_event.event_title</h1>
+	<!-- 
+	This is dynamic and will populate based on the taxonomy entry (Open Water, Triathlon and Pool) when the member is creating this event. 
+	 -->
+	<h5 class="swim-type">@swim_event.event_type_name</h5>
+	<div class="clearfix"></div>
+        <div class="description-copy">
+            @*MvcHtmlString.Create(Html.Encode(Model.CommentText).Replace(Environment.NewLine, "<br />"))*@
+            @*@Html.Raw(Html.Encode(swim_event.event_description).Replace("\n", "<br />"))*@
+            <p>@Html.Raw(swim_event.event_description.ToString().Replace(Environment.NewLine, "<br />"))</p>
+            @{
+            /*<p>
+                Please download and fill out the <a href="@Href(("~/Uploads/event/event_" + swim_event.event_id + "/AWROL_evt" + swim_event.event_id + ".pdf"))" target="_blank">Athletic Waiver and Release of Liability (AWROL)</a> form and bring it with you to the event.
+            </p>*/
+            }
+        </div>
+        <!-- /Event Description -->
+    </div>
+    
+        <!-- Event Registration -->
+        <!--
+    A series of events the member adds to their list of races. A user will have the ability to sign up for each event (checkboxes) they are interested in. Once they press submit (Register for Events) they will be directed to a payment page that totals their purchases and collects payment information.
+    -->
+        <div class="events-register">
+
+            <h4>Registration</h4>
+            <p>Use the form below to register for any of the events.</p>
+
+            @if (user_is_owner)
+            {
+                <!-- Add Swim Button -->
+                <div class="row modal-button">
+                    <div class="col-md-4">
+                        <button class="btn btn-success btn-lg" data-toggle="modal" data-target="#add-swim-modal"> +
+                        </button>
+
+                        Add Swim
+                    </div>
+                </div>
+            }
+            <hr />
+
+            <div id="swim-list">
+                @if (user_is_owner)
+                {
+                    @RenderPage("~/Swim/ManageSwims.cshtml")
+                }
+                else
+                {
+                    @RenderPage("~/Swim/SwimList.cshtml")
+                }
+            </div>
+
+            <div class="fb-comments" data-href="@Request.Url.AbsoluteUri" data-numposts="5" data-colorscheme="light"></div>
+            @Facebook.LikeButton(Request.Url.AbsoluteUri)
+
+            <!-- Add Swim Modal -->
+            <div class="modal fade" id="add-swim-modal" tabindex="-1" role="dialog" aria-labelledby="add-swim-modalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+
+                            <h4 class="modal-title" id="add-swim-modalLabel">Add Swim</h4>
+                        </div>
+
+                        <div class="modal-body">
+
+                            <p>Use the form below to add swims to your event.</p>
+
+                            <form name="add-swim" id="add-swim" method="post" action="@Href("~/Methods/AddSwim")">
+                                @AntiForgery.GetHtml()
+                                @* If at least one validation error exists, notify the user *@
+                                @Html.ValidationSummary("Account creation was unsuccessful. Please correct the errors and try again.", excludeFieldErrors: true, htmlAttributes: null)
+                                <input type="hidden" value="@event_id" name="evtid" />
+                                <input type="hidden" value="@if (!string.IsNullOrEmpty(swim_event.event_type_name)) {@swim_event.event_type_name}" name="swim-type" />
+                                <div class="row">
+                                    <div class="form-group col-sm-9">
+                                        <input type="text" class="form-control" id="swim-title" name="swim-title" placeholder="Swim Title">
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="form-group col-sm-3">
+                                        <input type="text" class="form-control" id="entry-fee" name="entry-fee" placeholder="Entry Fee"></p>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="form-group col-sm-9">
+                                        <label for="swim-description">Swim Description</label>
+                                        <textarea class="form-control" rows="3" id="swim-description" name="swim-description"></textarea>
+                                    </div>
+                                </div>
+
+                            </form>
+
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                            <button type="button" id="add-swim-button" class="btn btn-success">Add My Swim</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <script>
+                $("#add-swim-button").click(function () {
+                    $.ajax({
+                        type: "POST",
+                        url: $("#add-swim").attr('action'),
+                        data: $("#add-swim").serialize(),
+                        //dataType: "text/plain",
+                        success: function (response) {
+                            $("#add-swim-modal").modal('toggle');
+                            $("#swim-list").load('@Href("~/Event/Detail", event_id) #swim-list');
+                            //$("#swim-list").load('@Href("~/Swim/SwimList", event_id)');
+                        },
+                        error: function (response) {
+                            alert(response);
+                            $("#add-swim-modal").modal('toggle');
+                        }
+                    });
+                });
+            </script>
+            <!-- /Add Swim Modal -->
+
+
+            <!-- /Event Registration -->
+        </div>
+
+	<!-- /Content -->
+	</div>
+		 	
+</div>

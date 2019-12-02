@@ -1,0 +1,155 @@
+﻿@{
+    WebSecurity.RequireAuthenticatedUser();
+    Layout = null;
+    //Response.Expires = 0;
+
+    var db = Database.Open("SwamThat");
+    var query = "Select * from Swim where swim_in_event = @0 order by swim_id";
+
+    // Uncomment following to show loading indications
+    //System.Threading.Thread.Sleep(2000);
+    // NB: Remember to remove it after you finish testing!
+
+    var evt_id = UrlData[0].AsInt(-1);
+    // TODO: Add error try/catch
+    var swim_results = db.Query(query, evt_id).ToList();
+    //    if (IsPost)
+    //    {
+    //        var evt_id = Request["evtid"].AsInt(-1);
+    //        if (evt_id == -1)
+    //        {
+    //            Response.End();
+    //        }
+    //
+    //        var addswim_result = db.Query(query, evt_id).ToList();
+    //
+    //        Json.Write(addswim_result, Response.Output);
+    //    }
+    //    else
+    //    {
+    //        //var addswim_result = db.Query(query, evt_id).ToList();
+    //    }
+
+    /// snippet to provide alert message for throwing errors
+    // string message = "";
+    // System.Text.StringBuilder sb = new System.Text.StringBuilder();
+    // sb.Append("<script type='text/javascript'>");
+    // sb.Append("window.onload=function() {");
+    // sb.Append("alert('");
+    // sb.Append(message);
+    // sb.Append("')};");
+    // sb.Append("</script)");
+    //
+    // var sc = new ClientScriptManager();
+    // sc.RegisterClientScriptBlock(this.GetType(), "alert", sb.ToString());
+
+    
+}
+
+@{
+    var row_break = 4;
+    var i_row_count = 0;
+    foreach (var swim in swim_results)
+    {
+        if (row_break == i_row_count)
+        {
+            <div class="clearfix"></div>
+            i_row_count = 0;
+
+        }
+
+        i_row_count += 1;
+
+        <div class="col-sm-3 block">
+            <form>
+                <div class="checkbox">
+                    <label><input disabled="disabled" type="checkbox" value="@swim.swim_id"> @swim.swim_title</label>
+                </div>
+            </form>
+
+            <div class="register-info">
+                <h5 class="register-title">Entry Fee <span>|</span> @string.Format("{0:C2}", swim.price)</h5>
+                <p>@swim.swim_description</p>
+            </div>
+
+            <!-- Remove Swim Button -->
+            <div class="row modal-button">
+                <button class="btn btn-danger btn-lg" data-toggle="modal" data-target="#del-modal-@swim.swim_id"> -
+                </button>
+
+                Remove Swim
+            </div>
+
+            <!-- Remove Swim Modal -->
+            <div class="modal fade" id="del-modal-@swim.swim_id" tabindex="-1" role="dialog" aria-labelledby="add-swim-modalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                            <h4 class="modal-title" id="myModalLabel">Remove Swim</h4>
+                        </div>
+
+                        <div class="modal-body">
+                            <h5>Are you sure you want to remove &quot;@(swim.swim_title)&quot; swim from your event?</h5>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                            <button id="swim-@swim.swim_id" type="button" class="btn-del-swim btn btn-danger">Remove Swim</button>
+                            <!--<a href="@Href("~/Methods/RemoveSwim", swim.swim_id)" data-isdelete_link="true" class="btn-del-swim btn btn-danger">Remove Swim</a>-->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- /Remove Swim Modal -->
+            <!-- /Event Block -->
+        </div>
+    }
+    <script>
+        // change this to .on() and param for element to delegate event
+        $('#swim-list').click(function (e) {
+            var $target = $(e.target);
+            var $swim_id = e.target.id.split("-")[1];
+            if ($target.hasClass("btn-del-swim")) {
+                $.ajax({
+                    type: "GET",
+                    //data: event.target.id.split("-")[1],
+                    //url: event.target.attr('href'),
+                    url: "@Href("~/Methods/RemoveSwim/")" + $swim_id,
+                    success: function (response) {
+                        $('#del-modal-' + this.id).modal('hide');
+                        $("#swim-list").load('@Href("~/Event/Detail", evt_id) #swim-list', 
+                            function () {
+                                $('.modal-backdrop').remove();
+                                document.body.style.overflow = "auto";
+                            });
+                    },
+                    error: function (response) {
+                        alert(response);
+                        $("#add-swim-modal").modal('toggle');
+                    }
+                });
+            }
+        });
+    </script>
+
+    <div class="clearfix"></div>
+
+}
+
+@{
+    if (swim_results.Count > 0)
+    {
+        <div class="register-cta">
+            <p>Your swims will appear as they are above without the plus and minus buttons.  Check boxes and Registration button will appear for visitors when the swim event is active.</p>
+        </div>
+    }
+    else
+    {
+        <div class="register-cta">
+            <p>No swims have been added to this event</p>
+        </div>
+    }
+    
+}
+<!-- Event Block -->

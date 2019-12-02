@@ -1,0 +1,43 @@
+﻿@{
+    // needs to use different method redirect to 404 if not authenticated
+    WebSecurity.RequireAuthenticatedUser();
+    if (IsPost)
+    {
+        AntiForgery.Validate();
+
+        Validation.RequireField("entry-fee", "Entry fee is required");
+        
+        /// admin may have option to add auto activate
+        var db = Database.Open("SwamThat");
+        var sql = "INSERT INTO Swim (swim_in_event, swim_type_name, swim_date, active, price, swim_title, swim_description) " +
+            "VALUES (@0, @1, @2, @3, @4, @5, @6)";
+
+        var swim_in_event = Request["evtid"];
+        var swim_type_name = Request["swim-type"];
+        var swim_date = Request["swim-date"];
+        var active = false;
+        var price = Request["entry-fee"];
+        var swim_title = Request["swim-title"];
+        var swim_description = Request["swim-description"];
+
+        // Not needed now that swim type is a required field
+        if (string.IsNullOrEmpty(swim_type_name))
+        {
+            swim_type_name = null;
+        }
+
+        try
+        {
+            db.Execute(sql, swim_in_event, swim_type_name, swim_date, active, price, swim_title, swim_description);
+        }
+        catch (Exception e)
+        {
+            Response.Write("There was an error processing your request.");
+        }
+    }
+}
+<script type="text/javascript">
+    $(document).ready(function () {
+        $.validator.unobtrusive.parse("#add-swim");
+    });
+</script>   

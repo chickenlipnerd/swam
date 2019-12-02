@@ -1,0 +1,22 @@
+﻿@{
+    WebSecurity.RequireAuthenticatedUser();
+    Page.Title = "My Events";
+    var uid = UrlData[0].AsInt(-1);
+    var db = Database.Open("SwamThat");
+    var events = db.Query("select * from event where event_by_uid = @0 order by event_id", uid.ToString());
+    var grid = new WebGrid(events, canPage: true);
+    
+    if (events == null)
+    {
+        Response.Redirect("~/");
+    }
+}
+@* Display the controls for editing reviews*@    
+@grid.GetHtml(
+    tableStyle: "htmlTableList",
+    headerStyle: "adminTableHeader",
+    columns: grid.Columns(
+        grid.Column("EventName", header:"Event Name",
+                    format:@<text><a href="~/event/detail/@item.event_id">@item.event_title</a></text>)
+    )
+)

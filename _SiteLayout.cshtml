@@ -1,0 +1,27 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+    <head>
+        @RenderPage("~/Shared/_TopHead.cshtml")
+        @RenderPage("~/Shared/_Html5Shim.cshtml")
+    </head>
+
+    <body class="@Global.BodyClass">
+
+        @RenderPage("~/Shared/Layout/_Header.cshtml")
+
+<!-- Main Content -->
+<div id="container-wrap">
+
+<div class="main-container container">
+
+
+        @RenderBody()
+</div>
+
+<!-- /Main Content Wrap -->
+</div>
+
+        @RenderPage("~/Shared/Layout/_Footer.cshtml")
+        @RenderSection("Scripts", required: false)
+    </body>
+</html>

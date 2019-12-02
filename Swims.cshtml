@@ -1,0 +1,206 @@
+﻿@{
+    Layout = "~/_SiteLayout.cshtml";
+    Page.Title = "About Us";
+    Global.BodyClass = "swims list-page page";
+}
+
+
+<div class="row">
+    <div class="content col-sm-9">
+        <p style="font-size:1.2em;"><strong>Coming soon! Search for regional swims.</strong></p>
+        <hr />
+    </div>
+	<div style="position:relative; "class="content col-sm-9">
+        <div style="position:absolute;top:0px;left:0px;background-color: aliceblue; z-index:10000; opacity: 0.4; width:100%;height:100%;"></div>
+	
+	<div class="col-sm-9">
+	<h1 class="page-title">Swims</h1>
+    <p>Click the region below to see the map area details or use the quick link to see all regional swims.</p>
+	</div>
+	
+	<div class="col-sm-3">
+        @RenderPage("~/Shared/_StateSelector.cshtml")
+	</div>
+	
+	<div class="clearfix"></div>
+	
+	
+	<!-- 
+	U.S. map should appear here only for larger tablets and desktop. 
+	-->
+	<div class="map-select">
+		
+		<div class="map-container">
+		<div class="map-header">
+		</div>
+		
+		<!-- Map Content -->
+		<div class="map-content">
+		
+			<!-- Map Content Header -->
+			<div class="map-content-header">
+			<div class="header-row-large">
+			
+			
+			<!-- List Location -->
+			<div class="location">
+			<span class="state-ico"></span>
+			<h2>California</h2>
+			</div>
+			
+			
+			<!-- Event Location/Weather -->
+			<div class="row event-local">
+		
+			<div class="location-weather">
+			<img class="symbol-ico" src="theme/ico/weather-ico.png">
+		
+			<div class="weather-temp"><h2>75&#730;</h2></div>
+			<div class="weather-city"><p>Sacramento</p></div>
+			</div>
+			<!-- /Event Location/Weather -->
+			</div>
+			
+				
+			</div>
+			
+			<div class="header-row-small">
+			<p><a href="#" class="btn btn-warning" role="button">All Region Events</a></p>
+			@*<p><a href="#" class="btn btn-primary" role="button">View Members</a>	</p>*@
+			</div>
+			
+			<!-- /Map Content Header -->
+			</div>
+			
+			<!-- Column 1 -->
+			<div class="column sponsor first small">
+			<div class="column-ico sponsor"></div>
+			<div class="column-title">
+				<h4>Open Water</h4>
+			</div>
+				<div class="map-row row-sponsor first">
+				<a href="#" class="btn btn-primary" role="button">View Swims</a>
+				</div>
+				
+				<div class="map-row row-sponsor">
+					<h3 class="row-number">10</h3>
+					<p class="row-title">Sponsored Events</p>
+				</div>
+				
+				<div class="map-row row-sponsor">
+					<h3 class="row-number">44</h3>
+					<p class="row-title">Events</p>
+				</div>
+				
+				<div class="map-row row-sponsor last">
+					<h3 class="row-number">10</h3>
+					<p class="row-title">SwamThat Members</p>
+				</div>
+			<!-- /Column 1 -->
+			</div>
+			
+			<!-- Column 2 -->
+			<div class="column triathlon small">
+			<div class="column-ico triathlon"></div>
+			<div class="column-title">
+				<h4>Triathlons</h4>
+			</div>
+				<div class="map-row row-triathlon first">
+				<a href="#" class="btn btn-primary" role="button">View Swims</a>
+				</div>
+				
+				<div class="map-row row-triathlon">
+					<h3 class="row-number">10</h3>
+					<p class="row-title">Sponsored Events</p>
+				</div>
+				
+				<div class="map-row row-triathlon">
+					<h3 class="row-number">44</h3>
+					<p class="row-title">Events</p>
+				</div>
+				
+				<div class="map-row row-triathlon last">
+					<h3 class="row-number">10</h3>
+					<p class="row-title">SwamThat Members</p>
+				</div>
+			<!-- /Column 2 -->
+			</div>
+			
+			<!-- Column 3 -->
+			<div class="column pool small">
+			<div class="column-ico pool"></div>
+			<div class="column-title">
+				<h4>Triathlons</h4>
+			</div>
+				<div class="map-row row-pool first">
+				<a href="#" class="btn btn-primary" role="button">View Swims</a>
+				</div>
+				
+				<div class="map-row row-pool">
+					<h3 class="row-number">10</h3>
+					<p class="row-title">Sponsored Events</p>
+				</div>
+				
+				<div class="map-row row-triathlon">
+					<h3 class="row-number">44</h3>
+					<p class="row-title">Events</p>
+				</div>
+				
+				<div class="map-row row-triathlon last">
+					<h3 class="row-number">10</h3>
+					<p class="row-title">SwamThat Members</p>
+				</div>
+			<!-- /Column 3 -->
+			</div>
+			
+			<!-- Column 4 -->
+			<div class="column feed last">
+			
+			<div class="column content">
+			<div class="column-title">
+				<h4>Latest Regional<br />Swims</h4>
+			</div>
+			
+			<div class="row-latest first">
+			<p class="row-title">Bay City Breakers</p>
+			<p class="row-location">Half Moon Bay, CA</p>
+			<p class="row-event">6k Swim Around the Bay</p>
+			</div>
+			
+			<div class="row-latest">
+			<p class="row-title">Bay City Breakers</p>
+			<p class="row-location">Half Moon Bay, CA</p>
+			<p class="row-event">6k Swim Around the Bay</p>
+			</div>
+			
+			<div class="row-latest last">
+			<p class="row-title">Bay City Breakers</p>
+			<p class="row-location">Half Moon Bay, CA</p>
+			<p class="row-event">6k Swim Around the Bay</p>
+			</div>
+
+			
+			</div>
+			<!-- /Column 4 -->
+			</div>
+		
+		<!-- Map Content -->
+		</div>
+		
+		
+		
+		<div class="map-footer">
+		</div>
+	
+		</div>
+	
+	</div>
+	<!-- /Map -->
+	
+	<!-- /Content -->
+	</div>
+		 
+	@*RenderPage("~/Shared/Layout/_Sidebar.cshtml")*@
+	
+</div>
+

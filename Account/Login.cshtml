@@ -1,0 +1,129 @@
+﻿@* Remove this section if you are using bundling *@
+@section Scripts {
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+}
+
+@{
+    // force redirect to work around facebook sign app lack of support for multiple domains
+    if (!Request.Url.ToString().Contains("localhost"))
+    {
+        if (!Request.Url.ToString().Contains("www.swamthat.com"))
+        {
+            Response.Redirect("https://www.swamthat.com/account/login");
+        }
+    }
+    
+    Page.Title = "Log in";
+    Global.BodyClass = "add-race form page";
+
+    // Initialize general page variables
+    var email = "";
+    var password = "";
+    var rememberMe = false;
+
+    var returnUrl = Request.QueryString["ReturnUrl"];
+    if (returnUrl.IsEmpty()) {
+        // Some external login providers always require a return URL value
+        returnUrl = Href("~/");
+    }
+
+    // Setup validation
+    Dictionary<string, object> attributes = new Dictionary<string, object>();
+    attributes.Add("class", "alert alert-danger");
+    
+    Validation.RequireField("email", "<p>You must specify an email address.</p>");
+    Validation.RequireField("password", "<p>You must specify a password.</p>");
+    Validation.Add("password",
+        Validator.StringLength(
+            maxLength: Int32.MaxValue,
+            minLength: 6,
+            errorMessage: "<p>Password must be at least 6 characters</p>"));
+
+    // If this is a POST request, validate and process data
+    if (IsPost) {
+        AntiForgery.Validate();
+        // is this an external login request?
+        string provider = Request.Form["provider"];
+        if (!provider.IsEmpty()) {
+            OAuthWebSecurity.RequestAuthentication(provider, Href("~/Account/RegisterService", new { returnUrl }));
+            return;
+        } else if (Validation.IsValid()) {
+            email = Request.Form["email"];
+            password = Request.Form["password"];
+            rememberMe = Request.Form["rememberMe"].AsBool();
+
+            if (WebSecurity.UserExists(email) && WebSecurity.GetPasswordFailuresSinceLastSuccess(email) > 4 && WebSecurity.GetLastPasswordFailureDate(email).AddSeconds(60) > DateTime.UtcNow) {
+                Response.Redirect("~/Account/AccountLockedOut");
+                return;
+            }
+
+            // Attempt to log in using provided credentials
+            if (WebSecurity.Login(email, password, rememberMe)) {
+                Context.RedirectLocal(returnUrl);
+                return;
+            } else {
+                ModelState.AddFormError("The user name or password provided is incorrect.");
+            }
+        }
+    }
+}
+
+<div class="row">
+    <div class="content col-sm-12">
+        <div class="form">
+            <div class="row profile-information">
+                <hgroup class="title">
+                    <h1>@Page.Title.</h1>
+                </hgroup>
+                <div class="form-item col-md-9">
+                    <form method="post">
+                        <fieldset>
+                            <legend>Log in to Your Account</legend>
+                            <p class="help-block">Use a local account to log in.</p>
+                            <div class="col-sm-9 username">
+                                <section id="loginForm">
+                                    @AntiForgery.GetHtml()
+                                    @* If one or more validation errors exist, show an error *@
+                                    @Html.ValidationSummary("Log in was unsuccessful. Please correct the errors and try again.", excludeFieldErrors: true, htmlAttributes: attributes)
+                            </div>
+                            <div class="col-sm-4 username">
+                                    <label for="email" @if (!ModelState.IsValidField("email"))
+                                                        {<text>class="error-label"</text>}>Email address</label>
+                                    <div class="form-group">
+                                        <input class="form-control" type="text" id="email" placeholder="Username" name="email" value="@email" @Validation.For("email")/>
+                                    </div>
+                                    @* Write any user name validation errors to the page *@
+                                    @Html.ValidationMessage("email")
+                                    <label for="password" @if (!ModelState.IsValidField("password")) {<text>class="error-label"</text>}>Password</label>
+                                    <div class="form-group">
+                                        <input class="form-control" type="password" id="password" placeholder="Password" name="password" @Validation.For("password")/>
+                                    </div>
+                                    @* Write any password validation errors to the page *@
+                                    @Html.ValidationMessage("password")
+                                    <div class="form-group">
+                                        <input style="float: left;" type="checkbox" id="rememberMe" name="rememberMe" value="true" checked="@rememberMe" />
+                                        <label style="float: left; margin-top: 0px;" class="checkbox" for="rememberMe">Remember me?</label>
+                                    </div>
+                                    <div style="clear: both;" class="form-group">
+                                        <input class="btn btn-default" type="submit" value="Log in" />
+                                    </div>
+                                    <p>
+                                        <a href="~/Account/Register">Don't have a Account?</a><br/>
+                                        <a href="~/Account/ForgotPassword">Did you forget your password?</a>
+                                    </p>
+                                </section>
+                            </div>
+                        </fieldset>
+                    </form>
+                </div>
+                <div class="col-md-9">
+                    <section class="social" id="socialLoginForm">
+                        <p class="help-block">Use another service to log in.</h3>
+                        @RenderPage("~/Account/_ExternalLoginsList.cshtml")
+                    </section>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

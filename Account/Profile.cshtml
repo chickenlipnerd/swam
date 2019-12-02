@@ -1,0 +1,849 @@
+﻿@using WebMatrix.WebData
+
+@* Remove this section if you are using bundling *@
+@section Scripts {
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+}
+
+@{
+    WebSecurity.RequireAuthenticatedUser();
+
+    Page.Title = "Manage Profile";
+
+    var user_id = WebSecurity.CurrentUserId;
+    var db = Database.Open("Swamthat");
+
+    var user_profile = db.QuerySingle("SELECT * FROM UserProfile WHERE UserId = @0", user_id);
+    var action = Request.Form["action"];
+
+    bool hasLocalAccount = OAuthWebSecurity.HasLocalAccount(WebSecurity.CurrentUserId);
+
+    var profile_first_name = user_profile.first_name;
+    var profile_last_name = user_profile.last_name;
+    var heading_name = "My Account";
+
+    if (!string.IsNullOrEmpty(profile_first_name) && string.IsNullOrEmpty(profile_last_name))
+    {
+        heading_name = profile_first_name + "'s Account";
+    }
+    
+    if (string.IsNullOrEmpty(profile_first_name) && !string.IsNullOrEmpty(profile_last_name))
+    {
+        heading_name = profile_last_name + "'s Account";
+    }
+    
+    if (!string.IsNullOrEmpty(profile_first_name) && !string.IsNullOrEmpty(profile_last_name))
+    {
+        heading_name = profile_first_name + " " + profile_last_name + "'s Account";
+    }
+
+    string successMessage = "";
+    var message = Request.QueryString["message"];
+    if (message == "ChangedPassword") {
+        successMessage = "Your password has been changed.";
+    } else if (message == "SetPassword") {
+        successMessage = "Your password has been set.";
+    } else if (message == "RemovedLogin") {
+        successMessage = "The external login was removed.";
+    }
+
+    var externalLogins =
+        (from account in OAuthWebSecurity.GetAccountsFromUserName(WebSecurity.CurrentUserName)
+         let clientData = OAuthWebSecurity.GetOAuthClientData(account.Provider)
+         select new { Provider = account.Provider, ProviderDisplayName = clientData.DisplayName, UserId = account.ProviderUserId })
+        .ToList();
+    bool canRemoveLogin = externalLogins.Count > 1 || hasLocalAccount;
+
+    // Setup validation
+    if (hasLocalAccount) {
+        Validation.RequireField("currentPassword", "The current password field is required.");
+        Validation.Add("currentPassword",
+            Validator.StringLength(
+                maxLength: Int32.MaxValue,
+                minLength: 6,
+                errorMessage: "Current password must be at least 6 characters"));
+    }
+    Validation.RequireField("newPassword", "The new password field is required.");
+    Validation.Add("confirmPassword",
+        Validator.Required("The confirm new password field is required."),
+        Validator.EqualsTo("newPassword", "The new password and confirmation password do not match."));
+    Validation.Add("newPassword",
+        Validator.StringLength(
+            maxLength: Int32.MaxValue,
+            minLength: 6,
+            errorMessage: "New password must be at least 6 characters"));
+    Validation.RequireField("profile-email", "Please provide an email.");
+    Validation.Add("profile-email",
+        Validator.Regex(@"^[ \t]*(([\w-]+\.)+[\w-]+|([a-zA-Z]{1}|[\w-]{2,}))@((([0-1]?[0-9]{1,2}|25[0-5]|2[0-4][0-9])\.([0-1]?[0-9]{1,2}|25[0-5]|2[0-4][0-9])\.([0-1]?[0-9]{1,2}|25[0-5]|2[0-4][0-9])\.([0-1]?[0-9]{1,2}|25[0-5]|2[0-4][0-9])){1}|([a-zA-Z\w-]+\.)+[a-zA-Z]{2,4})[ \t]*$", "Invalid Email"));
+            
+
+    if (IsPost) {
+        AntiForgery.Validate();
+        if (action == "password") {
+            // Handle local account password operations
+            var currentPassword = Request.Form["currentPassword"];
+            var newPassword = Request.Form["newPassword"];
+            var confirmPassword = Request.Form["confirmPassword"];
+
+            if (Validation.IsValid()) {
+                if (hasLocalAccount) {
+                    if (WebSecurity.ChangePassword(WebSecurity.CurrentUserName, currentPassword, newPassword)) {
+                        Response.Redirect("~/Account/Profile?message=ChangedPassword");
+                        return;
+                    } else {
+                        ModelState.AddFormError("An error occurred when attempting to change the password. Please contact the site owner.");
+                    }
+                } else {
+                    bool requireEmailConfirmation = !WebMail.SmtpServer.IsEmpty();
+                    try {
+                        WebSecurity.CreateAccount(WebSecurity.CurrentUserName, newPassword, requireEmailConfirmation);
+                        Response.Redirect("~/Account/Profile?message=SetPassword");
+                        return;
+                    } catch (System.Web.Security.MembershipCreateUserException e) {
+                        ModelState.AddFormError(e.Message);
+                    }
+                }
+            } else {
+                ModelState.AddFormError("Password change was unsuccessful. Please correct the errors and try again.");
+            }
+        //} else if (action == "username") {
+        //    var username = Request.Form["profile-username"];
+        //    Response.Write("Form request responding to username update request");
+        } else if (action == "email") {
+            // var email = Request.Form["profile-email"];
+            var profile_email = Request.Form["profile-email"];
+            //Response.Write("Form request responding to email update request");
+
+            var sql_update_email = "UPDATE UserProfile set Email = @0 WHERE UserId = @1";
+
+            if (string.IsNullOrEmpty(profile_email))
+            {
+                profile_email = null;
+            }
+
+            try
+            {
+                db.Execute(sql_update_email, profile_email, WebSecurity.CurrentUserId);
+            }
+            catch (Exception e)
+            {
+                Response.Write("There was an error processing your request.");
+            }
+            
+        } else if (action == "location") {
+            // var location = Request.Form["location"];
+            Response.Write("Form request responding to location update request");
+        } else if (action == "profile-title") {
+            Response.Write("Form request responding to profile-title update request");
+        } else if (action == "interests") {
+            Response.Write("Form request responding to interests update request");
+        } else if (action == "social") {
+            Response.Write("Form request responding to social update request");
+        } else  {       //(action == "profile-name") { 
+            var f_name = Request.Form["InputFirstName"];
+            Response.Write("This was a test of Changing the Profile Name");
+        }
+    }
+}
+<div class="row">
+	<div class="content col-sm-12">
+		<div class="edit-title row">
+			<div class="profile-edit-content col-md-8">
+				<h1 class="page-title real-name">@heading_name</h1>	
+			</div>	
+			<div class="profile-edit-modal col-md-4">
+				<a class="btn btn-xs" data-toggle="modal" data-target="#userRealNameModal"><span class="glyphicon glyphicon-pencil"></span> Edit</a>
+			</div>
+		</div>
+
+        @if (!successMessage.IsEmpty())
+        {
+            @* class="alert alert-success" & class="alert alert-danger" *@
+            <div class="alert alert-success" role="alert">
+                <p class="message-success">
+                    @successMessage
+                </p>
+            </div>
+        }
+
+		<!-- Modal -->
+        <form method="post">
+            @AntiForgery.GetHtml()
+            <div id="userRealNameModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="userRealNameModal" aria-hidden="true">
+                <div class="modal-dialog modal-sm">
+                    <div class="modal-content">
+
+                        <div class="modal-header">
+                            <h3>Edit Your Name</h3>
+                        </div>
+
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <label for="first-name" @if (!ModelState.IsValidField("first-name")) { <text> class="error-label" </text>  }></label>
+                                <input type="text" class="form-control" id="first-name" name="first-name" placeholder="First Name" @Validation.For("first-name") />
+                                @Html.ValidationMessage("first-name")
+                            </div>
+
+                            <div class="form-group">
+                                <label for="last-name" @if (!ModelState.IsValidField("last-name")) { <text> class="error-label" </text>   }></label>
+                                <input type="text" class="form-control" id="last-name" name="last-name" placeholder="Last Name" @Validation.For("last-name") />
+                                @Html.ValidationMessage("last-name")
+                            </div>
+
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                            <button type="submit" name="action" value="profile-name" class="btn btn-primary">Save changes</button>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </form>
+        <!-- /Modal -->
+		<!-- Personal Info Edit -->
+        <div class="personal-info-wrap row">
+            <div class="edit-content col-md-9">
+                <p class="help-block">This information will not viewable to the public, only to you. We do not publish usernames, email address or detailed location.</p>
+                <!-- Username -->
+                @{
+                //<div class="profile-edit">
+                //    <div class="profile-edit-content col-md-8">
+                //        <h5 class="username"><span class="legend">Username</span> @WebSecurity.CurrentUserName</h5>
+                //    </div>
+                //    <div class="profile-edit-modal col-md-4">
+                //        <a class="btn btn-xs" data-toggle="modal" data-target="#userNameModal"><span class="glyphicon glyphicon-pencil"></span> Edit</a>
+                //    </div>
+                //</div>
+                <!-- Modal -->
+                //<form method="post">
+                //    @AntiForgery.GetHtml()
+                //    <div id="userNameModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="userNameModal" aria-hidden="true">
+                //        <div class="modal-dialog modal-sm">
+                //            <div class="modal-content">
+                //                <div class="modal-header">
+                //                    <h3>Edit Your Username</h3>
+                //                </div>
+                //                <div class="modal-body">
+                //                    <div class="form-group">
+                //                        <input type="text" class="form-control" name="profile-username" id="profile-username" placeholder="Username">
+                //                    </div>
+                //                </div>
+                //                <div class="modal-footer">
+                //                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                //                    <button type="submit" name="action" value="username" class="btn btn-primary">Save changes</button>
+                //                </div>
+                //            </div>
+                //        </div>
+                //    </div>
+                //</form>
+                }
+                <!-- /Modal -->
+                <!-- Email -->
+                <div class="profile-edit">
+                    <div class="profile-edit-content col-md-8">
+                        <h5 class="email"><span class="legend">Email</span> @WebSecurity.CurrentUserName</h5>
+                    </div>
+                    <div class="profile-edit-modal col-md-4">
+                        <a class="btn btn-xs" data-toggle="modal" data-target="#userEmailModal"><span class="glyphicon glyphicon-pencil"></span> Edit</a>
+                    </div>
+                </div>
+                <!-- Modal -->
+                <form method="post">
+                    @AntiForgery.GetHtml()
+                    <div id="userEmailModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="userEmailModal" aria-hidden="true">
+                        <div class="modal-dialog modal-sm">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h3>Edit Your Email</h3>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="form-group">
+                                        <label for="profile-email" @if (!ModelState.IsValidField("profile-email")) { <text> class="error-label" </text> }></label>
+                                        <input type="text" class="form-control" id="profile-email" name="profile-email" placeholder="@WebSecurity.CurrentUserName" @Validation.For("profile-email") />
+                                        @Html.ValidationMessage("profile-email")
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                    <button type="submit" name="action" value="email" class="btn btn-primary">Save changes</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+                <!-- /Modal -->
+                <!-- Password -->
+                <div class="profile-edit">
+                    <div class="profile-edit-content col-md-8">
+                        <h5 class="pass"><span class="legend">Password</span> ********************</h5>
+                    </div>
+                    <div class="profile-edit-modal col-md-4">
+                        <a class="btn btn-xs" data-toggle="modal" data-target="#userPassModal"><span class="glyphicon glyphicon-pencil"></span> Edit</a>
+                    </div>
+                </div>
+                <!-- Modal -->
+                <form method="post">
+                    @AntiForgery.GetHtml()
+                    <div id="userPassModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="userPassModal" aria-hidden="true">
+                        <div class="modal-dialog modal-sm">
+                            <div class="modal-content">
+
+                                <div class="modal-header">
+                                    <h3>Edit Your Password</h3>
+                                </div>
+
+                                @Html.ValidationSummary(excludeFieldErrors: true)
+
+                                <div class="modal-body">
+                                    <div class="form-group">
+                                        <label for="currentPassword" class="help-block @if (!ModelState.IsValidField("currentPassword")) { <text> error-label </text> }">Current Password </label>
+                                        <input type="password" class="form-control" id="currentPassword" name="currentPassword" placeholder="Current Password" @Validation.For("currentPassword") />
+                                        @Html.ValidationMessage("currentPassword")
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="newPassword" class="help-block @if (!ModelState.IsValidField("newPassword")) { <text> error-label </text> }">New Password </label>
+                                        <input type="password" class="form-control" id="newPassword" placeholder="New Password" name="newPassword" @Validation.For("newPassword") />
+                                        @Html.ValidationMessage("newPassword")
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="confirmPassword" class="help-block @if (!ModelState.IsValidField("confirmPassword")) { <text> error-label </text> }">Confirm New Password </label>
+                                        <input type="password" class="form-control" id="confirmPassword" placeholder="Confirm New Password" name="confirmPassword" @Validation.For("confirmPassword") />
+                                        @Html.ValidationMessage("confirmPassword")
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <p>
+                                        Click <a href="@Href("~/Account/ForgotPassword")" title="Forgot password page">here</a> if you've forgotten your password.
+                                    </p>
+                                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                    <button type="submit" class="btn btn-primary" name="action" value="password">Save changes</button>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </form>
+                <!-- /Modal -->
+
+            </div><!-- /Username | Email | Password -->
+            <!-- Column Info Edit -->
+            <div class="edit-column col-md-3">
+
+                <div class="profile-edit col-md-12">
+                    <div class="profile-edit-content">
+                        <h5><span class="legend">Title</span> Athletic Trainer</h5>
+                    </div>
+                    <div class="profile-edit-modal">
+                        <a class="btn btn-xs" data-toggle="modal" data-target="#userYourTitleModal"><span class="glyphicon glyphicon-pencil"></span> Edit</a>
+                    </div>
+                </div>
+
+
+                <!-- Modal -->
+                <div id="userYourTitleModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="userYourTitleModal" aria-hidden="true">
+                    <div class="modal-dialog modal-sm">
+                        <div class="modal-content">
+
+                            <div class="modal-header">
+                                <h3>Edit Your Title</h3>
+                            </div>
+
+                            <div class="modal-body">
+                                <label class="radio-inline">
+                                    <input type="radio" name="inlineRadioOptions" id="inlineRadio1" value="AthleticTrainer"> Athletic Trainer
+                                </label>
+                                <label class="radio-inline">
+                                    <input type="radio" name="inlineRadioOptions" id="inlineRadio2" value="Coach"> Coach
+                                </label>
+
+                            </div>
+
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                <button type="button" class="btn btn-primary">Save changes</button>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                <!-- /Modal -->
+
+                <div class="profile-edit col-md-12">
+                    <div class="profile-edit-content">
+                        <h5><span class="legend">Interests</span> Pool, Open Water</h5>
+                    </div>
+                    <div class="profile-edit-modal">
+                        <a class="btn btn-xs" data-toggle="modal" data-target="#userInterestModal"><span class="glyphicon glyphicon-pencil"></span> Edit</a>
+                    </div>
+                </div>
+
+
+                <!-- Modal -->
+                <div id="userInterestModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="userInterestModal" aria-hidden="true">
+                    <div class="modal-dialog modal-sm">
+                        <div class="modal-content">
+
+                            <div class="modal-header">
+                                <h3>Edit Your Swim Interests</h3>
+                            </div>
+
+                            <div class="modal-body">
+                                <label class="checkbox-inline">
+                                    <input type="checkbox" name="inlineRadioInterest" id="inlineRadioInterest1" value="Pool"> Pool
+                                </label>
+                                <label class="checkbox-inline">
+                                    <input type="checkbox" name="inlineRadioInterest" id="inlineRadioInterest2" value="OpenWater"> Open Water
+                                </label>
+                                <label class="checkbox-inline">
+                                    <input type="checkbox" name="inlineRadioInterest" id="inlineRadioInterest3" value="Triathlon"> Triathlon
+                                </label>
+
+                            </div>
+
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                <button type="button" class="btn btn-primary">Save changes</button>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                <!-- /Modal -->
+                <!-- /Column Info Edit -->
+            </div>
+
+        </div>
+		<!-- /Personal Info Edit -->
+				
+		<!-- Additional Info Edit -->
+		<div class="additional-information-wrap row">
+		
+
+		<div class="edit-content col-md-9">
+		<h4>Location</h4>
+		<p class="help-block">Add your <em>Location</em> to your profile to find races and members in your area. Only the city and state will be visible on your profile.</p> 
+		
+		<div class="profile-edit">
+				<div class="profile-edit-content col-md-8">
+					<h5 class="address"><span class="legend">Address</span> 8503 South 165th Street, Omaha, NE 68136, United States</h5>
+				</div>
+				<div class="profile-edit-modal col-md-4">
+					<a class="btn btn-xs" data-toggle="modal" data-target="#userLocationModal"><span class="glyphicon glyphicon-pencil"></span> Edit</a>
+				</div>
+			</div>
+			
+			<!-- Modal -->
+			<div id="userLocationModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="userLocationModal" aria-hidden="true">
+				<div class="modal-dialog modal-sm">
+					<div class="modal-content">
+						
+						<div class="modal-header">
+						<h3>Edit Your Location</h3>
+						</div>
+						
+						<div class="modal-body">
+				    	
+							<div class="form-group">
+							<label for="textfield">Street</label>
+							<input type="text" class="form-control" id="textfield" name="street">
+							</div>
+							
+							<div class="form-group">
+							<label for="textfield">City</label>
+							<input type="text" class="form-control" id="textfield" name="city">
+							</div>
+							
+							<div class="form-group">
+							<label>State</label>
+							<select class="form-control" name="state">
+							<option value="none">-Select-</option>
+							<option value="al">Alabama</option>
+							<option value="ak">Alaska</option>
+							<option value="az">Arizona</option>
+							<option value="ar">Arkansas</option>
+							<option value="ca">California</option>
+							<option value="co">Colorado</option>
+							<option value="ct">Connecticut</option>
+							<option value="de">Delaware</option>
+							<option value="fl">Florida</option>
+							<option value="ga">Georgia</option>
+							<option value="ha">Hawaii</option>
+							<option value="id">Idaho</option>
+							<option value="il">Illinois</option>
+							<option value="in">Indiana</option>
+							<option value="ia">Iowa</option>
+							<option value="ka">Kansas</option>
+							<option value="ky">Kentucky</option>
+							<option value="la">Louisiana</option>
+							<option value="me">Maine</option>
+							<option value="md">Maryland</option>
+							<option value="ma">Massachusetts</option>
+							<option value="mi">Michigan</option>
+							<option value="mn">Minnesota</option>
+							<option value="ms">Mississippi</option>
+							<option value="mo">Missouri</option>
+							<option value="mt">Montana</option>
+							<option value="ne">Nebraska</option>
+							<option value="nv">Nevada</option>
+							<option value="nh">New Hampshire</option>
+							<option value="nj">New Jersey</option>
+							<option value="nm">New Mexico</option>
+							<option value="ny">New York</option>
+							<option value="nc">North Carolina</option>
+							<option value="nd">North Dakota</option>
+							<option value="oh">Ohio</option>
+							<option value="ok">Oklahoma</option>
+							<option value="or">Oregon</option>
+							<option value="pa">Pennsylvania</option>
+							<option value="ri">Rhode Island</option>
+							<option value="sc">South Carolina</option>
+							<option value="sd">South Dakota</option>
+							<option value="tn">Tennessee</option>
+							<option value="tx">Texas</option>
+							<option value="ut">Utah</option>
+							<option value="vt">Vermont</option>
+							<option value="va">Virginia</option>
+							<option value="wa">Washington</option>
+							<option value="wv">West Virginia</option>
+							<option value="wi">Wisconsin</option>
+							<option value="wy">Wyoming</option>
+							
+							</select>
+							</div>
+							
+								
+							<div class="form-group">
+							<label for="textfield">Postal Code</label>
+							<input type="text" class="form-control" id="textfield" name="postal_code">
+							</div>
+							
+							<div class="form-group">
+							<label>Country</label>
+							<select class="form-control" name="country">
+							<option value="none">-Country-</option>
+							<option value="AF">Afghanistan</option>
+							<option value="AX">Åland Islands</option>
+							<option value="AL">Albania</option>
+							<option value="DZ">Algeria</option>
+							<option value="AS">American Samoa</option>
+							<option value="AD">Andorra</option>
+							<option value="AO">Angola</option>
+							<option value="AI">Anguilla</option>
+							<option value="AQ">Antarctica</option>
+							<option value="AG">Antigua and Barbuda</option>
+							<option value="AR">Argentina</option>
+							<option value="AM">Armenia</option>
+							<option value="AW">Aruba</option>
+							<option value="AU">Australia</option>
+							<option value="AT">Austria</option>
+							<option value="AZ">Azerbaijan</option>
+							<option value="BS">Bahamas</option>
+							<option value="BH">Bahrain</option>
+							<option value="BD">Bangladesh</option>
+							<option value="BB">Barbados</option>
+							<option value="BY">Belarus</option>
+							<option value="BE">Belgium</option>
+							<option value="BZ">Belize</option>
+							<option value="BJ">Benin</option>
+							<option value="BM">Bermuda</option>
+							<option value="BT">Bhutan</option>
+							<option value="BO">Bolivia, Plurinational State of</option>
+							<option value="BQ">Bonaire, Sint Eustatius and Saba</option>
+							<option value="BA">Bosnia and Herzegovina</option>
+							<option value="BW">Botswana</option>
+							<option value="BV">Bouvet Island</option>
+							<option value="BR">Brazil</option>
+							<option value="IO">British Indian Ocean Territory</option>
+							<option value="BN">Brunei Darussalam</option>
+							<option value="BG">Bulgaria</option>
+							<option value="BF">Burkina Faso</option>
+							<option value="BI">Burundi</option>
+							<option value="KH">Cambodia</option>
+							<option value="CM">Cameroon</option>
+							<option value="CA">Canada</option>
+							<option value="CV">Cape Verde</option>
+							<option value="KY">Cayman Islands</option>
+							<option value="CF">Central African Republic</option>
+							<option value="TD">Chad</option>
+							<option value="CL">Chile</option>
+							<option value="CN">China</option>
+							<option value="CX">Christmas Island</option>
+							<option value="CC">Cocos (Keeling) Islands</option>
+							<option value="CO">Colombia</option>
+							<option value="KM">Comoros</option>
+							<option value="CG">Congo</option>
+							<option value="CD">Congo, the Democratic Republic of the</option>
+							<option value="CK">Cook Islands</option>
+							<option value="CR">Costa Rica</option>
+							<option value="CI">Côte d'Ivoire</option>
+							<option value="HR">Croatia</option>
+							<option value="CU">Cuba</option>
+							<option value="CW">Curaçao</option>
+							<option value="CY">Cyprus</option>
+							<option value="CZ">Czech Republic</option>
+							<option value="DK">Denmark</option>
+							<option value="DJ">Djibouti</option>
+							<option value="DM">Dominica</option>
+							<option value="DO">Dominican Republic</option>
+							<option value="EC">Ecuador</option>
+							<option value="EG">Egypt</option>
+							<option value="SV">El Salvador</option>
+							<option value="GQ">Equatorial Guinea</option>
+							<option value="ER">Eritrea</option>
+							<option value="EE">Estonia</option>
+							<option value="ET">Ethiopia</option>
+							<option value="FK">Falkland Islands (Malvinas)</option>
+							<option value="FO">Faroe Islands</option>
+							<option value="FJ">Fiji</option>
+							<option value="FI">Finland</option>
+							<option value="FR">France</option>
+							<option value="GF">French Guiana</option>
+							<option value="PF">French Polynesia</option>
+							<option value="TF">French Southern Territories</option>
+							<option value="GA">Gabon</option>
+							<option value="GM">Gambia</option>
+							<option value="GE">Georgia</option>
+							<option value="DE">Germany</option>
+							<option value="GH">Ghana</option>
+							<option value="GI">Gibraltar</option>
+							<option value="GR">Greece</option>
+							<option value="GL">Greenland</option>
+							<option value="GD">Grenada</option>
+							<option value="GP">Guadeloupe</option>
+							<option value="GU">Guam</option>
+							<option value="GT">Guatemala</option>
+							<option value="GG">Guernsey</option>
+							<option value="GN">Guinea</option>
+							<option value="GW">Guinea-Bissau</option>
+							<option value="GY">Guyana</option>
+							<option value="HT">Haiti</option>
+							<option value="HM">Heard Island and McDonald Islands</option>
+							<option value="VA">Holy See (Vatican City State)</option>
+							<option value="HN">Honduras</option>
+							<option value="HK">Hong Kong</option>
+							<option value="HU">Hungary</option>
+							<option value="IS">Iceland</option>
+							<option value="IN">India</option>
+							<option value="ID">Indonesia</option>
+							<option value="IR">Iran, Islamic Republic of</option>
+							<option value="IQ">Iraq</option>
+							<option value="IE">Ireland</option>
+							<option value="IM">Isle of Man</option>
+							<option value="IL">Israel</option>
+							<option value="IT">Italy</option>
+							<option value="JM">Jamaica</option>
+							<option value="JP">Japan</option>
+							<option value="JE">Jersey</option>
+							<option value="JO">Jordan</option>
+							<option value="KZ">Kazakhstan</option>
+							<option value="KE">Kenya</option>
+							<option value="KI">Kiribati</option>
+							<option value="KP">Korea, Democratic People's Republic of</option>
+							<option value="KR">Korea, Republic of</option>
+							<option value="KW">Kuwait</option>
+							<option value="KG">Kyrgyzstan</option>
+							<option value="LA">Lao People's Democratic Republic</option>
+							<option value="LV">Latvia</option>
+							<option value="LB">Lebanon</option>
+							<option value="LS">Lesotho</option>
+							<option value="LR">Liberia</option>
+							<option value="LY">Libya</option>
+							<option value="LI">Liechtenstein</option>
+							<option value="LT">Lithuania</option>
+							<option value="LU">Luxembourg</option>
+							<option value="MO">Macao</option>
+							<option value="MK">Macedonia, the former Yugoslav Republic of</option>
+							<option value="MG">Madagascar</option>
+							<option value="MW">Malawi</option>
+							<option value="MY">Malaysia</option>
+							<option value="MV">Maldives</option>
+							<option value="ML">Mali</option>
+							<option value="MT">Malta</option>
+							<option value="MH">Marshall Islands</option>
+							<option value="MQ">Martinique</option>
+							<option value="MR">Mauritania</option>
+							<option value="MU">Mauritius</option>
+							<option value="YT">Mayotte</option>
+							<option value="MX">Mexico</option>
+							<option value="FM">Micronesia, Federated States of</option>
+							<option value="MD">Moldova, Republic of</option>
+							<option value="MC">Monaco</option>
+							<option value="MN">Mongolia</option>
+							<option value="ME">Montenegro</option>
+							<option value="MS">Montserrat</option>
+							<option value="MA">Morocco</option>
+							<option value="MZ">Mozambique</option>
+							<option value="MM">Myanmar</option>
+							<option value="NA">Namibia</option>
+							<option value="NR">Nauru</option>
+							<option value="NP">Nepal</option>
+							<option value="NL">Netherlands</option>
+							<option value="NC">New Caledonia</option>
+							<option value="NZ">New Zealand</option>
+							<option value="NI">Nicaragua</option>
+							<option value="NE">Niger</option>
+							<option value="NG">Nigeria</option>
+							<option value="NU">Niue</option>
+							<option value="NF">Norfolk Island</option>
+							<option value="MP">Northern Mariana Islands</option>
+							<option value="NO">Norway</option>
+							<option value="OM">Oman</option>
+							<option value="PK">Pakistan</option>
+							<option value="PW">Palau</option>
+							<option value="PS">Palestinian Territory, Occupied</option>
+							<option value="PA">Panama</option>
+							<option value="PG">Papua New Guinea</option>
+							<option value="PY">Paraguay</option>
+							<option value="PE">Peru</option>
+							<option value="PH">Philippines</option>
+							<option value="PN">Pitcairn</option>
+							<option value="PL">Poland</option>
+							<option value="PT">Portugal</option>
+							<option value="PR">Puerto Rico</option>
+							<option value="QA">Qatar</option>
+							<option value="RE">Réunion</option>
+							<option value="RO">Romania</option>
+							<option value="RU">Russian Federation</option>
+							<option value="RW">Rwanda</option>
+							<option value="BL">Saint Barthélemy</option>
+							<option value="SH">Saint Helena, Ascension and Tristan da Cunha</option>
+							<option value="KN">Saint Kitts and Nevis</option>
+							<option value="LC">Saint Lucia</option>
+							<option value="MF">Saint Martin (French part)</option>
+							<option value="PM">Saint Pierre and Miquelon</option>
+							<option value="VC">Saint Vincent and the Grenadines</option>
+							<option value="WS">Samoa</option>
+							<option value="SM">San Marino</option>
+							<option value="ST">Sao Tome and Principe</option>
+							<option value="SA">Saudi Arabia</option>
+							<option value="SN">Senegal</option>
+							<option value="RS">Serbia</option>
+							<option value="SC">Seychelles</option>
+							<option value="SL">Sierra Leone</option>
+							<option value="SG">Singapore</option>
+							<option value="SX">Sint Maarten (Dutch part)</option>
+							<option value="SK">Slovakia</option>
+							<option value="SI">Slovenia</option>
+							<option value="SB">Solomon Islands</option>
+							<option value="SO">Somalia</option>
+							<option value="ZA">South Africa</option>
+							<option value="GS">South Georgia and the South Sandwich Islands</option>
+							<option value="SS">South Sudan</option>
+							<option value="ES">Spain</option>
+							<option value="LK">Sri Lanka</option>
+							<option value="SD">Sudan</option>
+							<option value="SR">Suriname</option>
+							<option value="SJ">Svalbard and Jan Mayen</option>
+							<option value="SZ">Swaziland</option>
+							<option value="SE">Sweden</option>
+							<option value="CH">Switzerland</option>
+							<option value="SY">Syrian Arab Republic</option>
+							<option value="TW">Taiwan, Province of China</option>
+							<option value="TJ">Tajikistan</option>
+							<option value="TZ">Tanzania, United Republic of</option>
+							<option value="TH">Thailand</option>
+							<option value="TL">Timor-Leste</option>
+							<option value="TG">Togo</option>
+							<option value="TK">Tokelau</option>
+							<option value="TO">Tonga</option>
+							<option value="TT">Trinidad and Tobago</option>
+							<option value="TN">Tunisia</option>
+							<option value="TR">Turkey</option>
+							<option value="TM">Turkmenistan</option>
+							<option value="TC">Turks and Caicos Islands</option>
+							<option value="TV">Tuvalu</option>
+							<option value="UG">Uganda</option>
+							<option value="UA">Ukraine</option>
+							<option value="AE">United Arab Emirates</option>
+							<option value="GB">United Kingdom</option>
+							<option value="US">United States</option>
+							<option value="UM">United States Minor Outlying Islands</option>
+							<option value="UY">Uruguay</option>
+							<option value="UZ">Uzbekistan</option>
+							<option value="VU">Vanuatu</option>
+							<option value="VE">Venezuela, Bolivarian Republic of</option>
+							<option value="VN">Viet Nam</option>
+							<option value="VG">Virgin Islands, British</option>
+							<option value="VI">Virgin Islands, U.S.</option>
+							<option value="WF">Wallis and Futuna</option>
+							<option value="EH">Western Sahara</option>
+							<option value="YE">Yemen</option>
+							<option value="ZM">Zambia</option>
+							<option value="ZW">Zimbabwe</option>
+							</select>
+							</div>
+							
+						</div>
+						
+						<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+						<button type="button" class="btn btn-primary">Save changes</button>
+						</div>
+						
+					</div>	
+		  		</div>
+		  	</div>
+			<!-- /Modal -->
+		
+		
+				
+		
+		</div>
+		
+        <div class="edit-column col-md-3">
+            <section id="externalLogins">
+                @if (externalLogins.Count > 0) {
+                    <h3>Registered external logins</h3>
+                    <table>
+                        <tbody>
+                        @foreach (var externalLogin in externalLogins) {
+                            <tr>
+                                <td>@externalLogin.ProviderDisplayName</td>
+                                <td>
+                                    @if (canRemoveLogin) {
+                                        <form method="post">
+                                            @AntiForgery.GetHtml()
+                                            <fieldset>
+                                                <legend></legend>
+                                                <input type="hidden" name="provider" value="@externalLogin.Provider" />
+                                                <input type="hidden" name="userId" value="@externalLogin.UserId" />
+                                                <button type="submit" name="action" value="removeLogin" title="Remove this @externalLogin.ProviderDisplayName credential from your account">Remove</button>
+                                            </fieldset>
+                                        </form>
+                                    } else {
+                                        @: &nbsp;
+                                    }
+                                </td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                }
+            </section>
+        </div>
+		
+		<div class="edit-column col-md-3">	
+
+		<div class="social-media"><!-- Social -->
+			<h5>Social Media Links</h5>
+			<p class="help-block">You may add your social media pages to your SwamThat profile.</p> 
+			<div class="form-group form-facebook">
+			<label>Facebook</label>
+			<input class="form-control" type="text" >
+			</div>
+			
+			<label>Twitter</label>
+			<div class="form-group form-twitter">
+			<input class="form-control" type="text">
+			</div>
+			
+			<button type="button" class="btn btn-primary">Save changes</button>
+			
+			</div><!-- /Social -->
+		</div>
+		</div>
+	</div>
+</div>

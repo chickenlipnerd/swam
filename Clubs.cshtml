@@ -1,0 +1,135 @@
+﻿@using System.Data;
+@{
+    Page.Title = "Clubs";
+    Global.BodyClass = "club list-page page";
+
+    var page_size = 20;
+    var total_pages = 0;
+    var count = 0;
+    /*var page = UrlData[0].AsInt(1);*/
+    var page = Request["page"].AsInt(1);
+    var offset = (page - 1) * page_size;
+    
+    string query_string = "";
+    string query_count = "";
+
+    var db = Database.Open("SwamThat");
+    var select_state = Request["state-selected"];
+    if (select_state == "all" || select_state == "none" || select_state == null)
+    {
+        query_string = "SELECT * FROM club ORDER BY ClubId OFFSET @1 ROWS FETCH NEXT @2 ROWS ONLY";
+        query_count = "SELECT COUNT(*) FROM club";
+    } 
+    else 
+    {
+        Page.Title = "Clubs in " + db.QueryValue(@"SELECT name FROM us_states WHERE StateId = @0", select_state);
+        query_string = "SELECT * FROM club WHERE club.state = @0 ORDER BY ClubId OFFSET @1 ROWS FETCH NEXT @2 ROWS ONLY";
+        query_count = "SELECT COUNT(*) FROM club WHERE club.state = @0";
+    }
+
+//    DataSet ds = new DataSet();
+//    var us_states = db.Query("SELECT * FROM us_states");
+//    var filteredBooks = from b in us_states
+//                                      where b.name.Contains("NE")
+//                                      select b;
+//
+//    var thestate = us_states.Where(s => s.Columns<string>("name") == "NE");
+
+    count = (int)db.QueryValue(query_count, select_state);
+    total_pages = count / page_size;
+    if (count % page_size > 0)
+    {
+        total_pages += 1;
+    }
+
+    var club_results = db.Query(query_string, select_state, offset, page_size).ToList();
+}
+
+	<div class="row">
+	<div class="content col-sm-9">
+	
+	<div class="col-sm-9">
+	
+	    <h1 class="page-title">@Page.Title.Split('-')[0]</h1>
+        @{
+            if (count == 0) {
+                <p>There are no clubs.</p>
+                <p><a role="button" class="btn btn-primary" href="@Href("~/club/addclub")">Submit your Club</a></p>
+            } else {
+                <p>There are @count clubs.
+        	    Use the quick link to see all regional clubs.</p>
+            }
+        }
+	</div>
+	
+    @{
+        // TODO: Automatically filter based on current location
+        // Also need to remember selection and provide a title in the url and header
+    }       
+    <form method="get">
+	    <div class="col-sm-3">
+            @RenderPage("~/Shared/_StateSelector.cshtml")
+	    </div>
+    </form>	
+	<div class="clearfix"></div>	
+
+
+	@{
+        foreach(var club in club_results)
+        {
+	        <!-- Row -->
+	        <div class="row list-row">
+	            <div class="list-row-content col-sm-9">
+	                <h4>@club.name</h4>
+	                <p class="state">@club.city, @db.QuerySingle("SELECT name FROM us_states WHERE StateId = @0", club.state).name <span>|</span> Triathlon (Club Type)</p>
+	            </div>
+	            <div class="list-cta col-sm-3">
+                    @{if (string.IsNullOrEmpty(club.website))
+                        {
+                            <a href="@Href("~/club/detail", club.ClubId)" data-paypal-button="true" class="btn btn-warning" role="button">View Club Details</a>
+                        } else {
+                            <a href="@club.website" data-paypal-button="true" class="btn btn-warning" role="button">Visit Club Site</a>
+                        }
+                    }
+	            </div>
+	        </div>
+        }
+	}
+	
+	<!-- Pager -->
+        @{ 
+            if (total_pages > 0)
+            {
+                <ul class="pagination">
+                    @{
+                        for (var i = 1; i < total_pages + 1; i++)
+                        {
+                            if (string.IsNullOrEmpty(select_state))
+                            {
+                                @*<li><a href="@Href("~/clubs", "page=" + i)">@i</a></li>*@
+                                <li><a href="@Href("~/clubs?page=" + i)">@i</a></li> 
+                            }
+                            else
+                            {
+                                <li><a href="@Href("~/clubs?page=" + i + "&selected-state=" + select_state)">@i</a></li>    
+                            }
+                            
+                        }
+                    }
+                </ul>
+            }
+        }
+            @*  //<!--<ul class="pagination">
+                //<li><a href="#">&laquo;</a></li>
+                //<li><a href="#">1</a></li>
+                //<li><a href="#">2</a></li>
+                //<li><a href="#">3</a></li>
+                //<li><a href="#">4</a></li>
+                //<li><a href="#">5</a></li>
+                //<li><a href="#">&raquo;</a></li>
+                //</ul>-->
+                //
+                //<!-- /Content -->*@
+</div>
+		 	
+</div>

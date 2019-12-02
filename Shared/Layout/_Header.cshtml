@@ -1,0 +1,89 @@
+﻿@{
+    bool user_has_swims = false;
+    var query = "select event_by_uid from event where event_by_uid = @0";
+
+    if (WebSecurity.IsAuthenticated)
+    {
+        var db = Database.Open("SwamThat");
+        var evt = db.QuerySingle(query, WebSecurity.CurrentUserId);
+        
+        if (evt != null)
+        {
+            user_has_swims = true;
+        }
+    }
+}
+
+        <!-- Header -->
+        <div id="header-wrap">
+            <!-- Navbar -->
+            <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+                <div class="container">
+                    <div class="navbar-header">
+
+                        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        </button>
+
+                        <!-- Logo -->
+                        <a class="navbar-brand" href="~/">SwamThat</a>
+                        <!-- /Logo -->
+                    </div>
+
+                    <!-- Main Navigation Elements  -->
+                    <div class="navbar-collapse collapse">
+
+                        <form id="logoutForm" action="~/Account/Logout" method="post">
+                            @AntiForgery.GetHtml()
+                        </form>
+
+                        <ul class="nav navbar-nav">
+                            <li><a href="@Href("~/swims")">Swims</a></li>
+                            <li><a href="@Href("~/clubs")">Clubs</a></li> 
+                            <li><a href="@Href("~/forum")">Forum</a></li>
+                            <li><a href="@Href("~/about-us")">About Us</a></li>
+                            <li><a href="http://www.gofundme.com/61wo5o" target="_blank">Charity Project</a></li>
+	                        <li class="dropdown">
+		                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">My Account <b class="caret"></b></a>
+		                        <ul class="dropdown-menu">
+                                    @if (WebSecurity.IsAuthenticated) {
+                                        <text>
+                                        <li><a class="email" href="~/account/manage" title="Manage">Profile</a></li>
+                                        @if (user_has_swims)
+                                        {
+                                            <text>
+                                                <li><a href="~/event/eventlist/@WebSecurity.CurrentUserId">My Swims</a></li></text>
+                                        }
+                                        <li class="divider"></li>
+                                        <li><a href="javascript:document.getElementById('logoutForm').submit()">Log out</a></li>
+                                        </text>
+                                    } else {
+                                        <text>
+                                        <li><a href="~/account/register">Register</a></li>
+                                        <li><a href="~/account/login">Log in</a></li>
+                                        </text>
+                                    }
+		                        </ul>
+	                        </li>
+                        </ul>
+                        @{var rRoot = "~/";}
+                    <script>
+                        var ref = document.referrer;
+                        var urlRoot = "@rRoot" + "forum?" + ref.split('?')[1];
+                        var foo = $('a[href="@rRoot"' + 'forum' + '"]');
+                        if (ref.search('forum') >= 0) {
+                            foo.attr('href', urlRoot);
+                        }
+                    </script>   
+
+                    </div>
+                    <!--/.nav-collapse -->
+
+                </div>
+            </div>
+
+        <!-- /Header -->
+        </div>

@@ -1,0 +1,326 @@
+﻿@* Remove this section if you are using bundling *@
+@section Scripts {
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+}
+
+@{
+    WebSecurity.RequireAuthenticatedUser();
+    Page.Title = "Add Your Club";
+    Global.BodyClass = "list-page page california";
+
+    var club_by_uid = WebSecurity.CurrentUserId;
+
+    var club_name = "";
+    var club_image_url = "";
+    var club_banner_url = "";
+    var club_logo_filename = "";
+    var club_banner_filename = "";
+    var club_city = "";
+    var club_state = "";
+    var club_website = "";
+    var club_description = "";
+    var club_email = "";
+    var club_phone = "";
+    var club_address = "";
+    var club_zip = "";
+    var club_country = "US";
+    var club_interest = ""; // triathlon, open water, pool
+    var club_facebook = ""; // facebook feed
+    var club_twitter = ""; // twitter feed
+
+    var file_name = "";
+    var image_path = "";
+
+    var dbstypes = Database.Open("SwamThat");
+    var qstypes = dbstypes.Query("Select type_id from swim_type").ToArray();
+
+    string[] swim_type_ids = new string[qstypes.Length];
+    int i = 0;
+    foreach (var name in qstypes)
+    {
+        swim_type_ids[i] = name.type_id;
+        i++;
+    }
+
+    string swim_type_regex = string.Join("|", swim_type_ids);
+
+    Validation.RequireField("club-name", "Please provide a name for your club.");
+    Validation.RequireField("club-email", "Please provide an email.");
+    Validation.Add("club-email", 
+        Validator.Regex(@"^[ \t]*(([\w-]+\.)+[\w-]+|([a-zA-Z]{1}|[\w-]{2,}))@((([0-1]?[0-9]{1,2}|25[0-5]|2[0-4][0-9])\.([0-1]?[0-9]{1,2}|25[0-5]|2[0-4][0-9])\.([0-1]?[0-9]{1,2}|25[0-5]|2[0-4][0-9])\.([0-1]?[0-9]{1,2}|25[0-5]|2[0-4][0-9])){1}|([a-zA-Z\w-]+\.)+[a-zA-Z]{2,4})[ \t]*$", "Invalid Email"));
+    Validation.RequireField("club-address", "Please provide an address.");
+    Validation.RequireField("club-city", "Please provide a city.");
+//    Validation.RequireField("club-state", "Please provide a state.");
+//    Validation.Add("state-selected",
+//        Validator.Regex(@"/(?!(-Select-|All States)).*", "Please select a state."));
+    Validation.Add("club-zip", Validator.Regex("^\\d{5}(-\\d{4})?$", "Invalid zip code."));
+    Validation.Add("club-phone", Validator.Regex(@"^\(\d{3}\) ?\d{3}( |-)?\d{4}|^\d{3}( |-)?\d{3}( |-)?\d{4}", "Invalid Phone Number"));
+
+    WebImage photo = null;
+
+    if (IsPost)
+    {
+        AntiForgery.Validate();
+        
+        if (Validation.IsValid())
+        {
+            club_name = Request.Form["club-name"];
+            //club_image_url = Request.Form["club-image-url"];
+            //club_banner_url = Request.Form["club-banner-url"];
+            club_logo_filename = Request.Form["logo-image"];
+            club_banner_filename = Request.Form["banner-image"];
+            club_city = Request.Form["club-city"];
+            club_state = Request.Form["state-selected"];
+            club_website = Request.Form["club-website"];
+            club_description = Request.Form["club-description"];
+            club_email = Request.Form["club-email"];
+            club_phone = Request.Form["club-phone"];
+            club_address = Request.Form["club-address"];
+            club_zip = Request.Form["club-zip"];
+            //club_country = Request.Form["club-country"];
+            club_interest = Request.Form["club-interest"];
+            club_facebook = Request.Form["club-facebook"];
+            club_twitter = Request.Form["club-twitter"];
+            
+            if (string.IsNullOrEmpty(club_facebook))
+            {
+                club_facebook = "#";
+            }
+            
+            if (string.IsNullOrEmpty(club_twitter))
+            {
+                club_twitter = "#";
+            }
+            
+            Validation.AddFormError("Please add a state");
+            var db = Database.Open("SwamThat");
+            db.Execute(@"INSERT INTO club 
+                (name, city, state, website, description, email, phone, address, zip, country, club_interest, facebook, twitter, club_by_uid) VALUES 
+                (@0, @1, @2, @3, @4, @5, @6, @7, @8, @9, @10, @11, @12, @13)", club_name, club_city, club_state, club_website, 
+                club_description, club_email, club_phone, club_address, club_zip, club_country, club_interest, club_facebook, club_twitter, club_by_uid);
+
+            var new_club_id = db.GetLastInsertId();
+
+            var imageroot = Server.MapPath("~/uploads/club/");
+
+            var foldername = "club_" + new_club_id.ToString();
+            var path = Path.Combine(imageroot, foldername);
+
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
+
+            photo = WebImage.GetImageFromRequest("logo-image");
+            if (photo != null)
+            {
+                file_name = Path.GetFileName(photo.FileName);
+                image_path = @"uploads/club/club_" + new_club_id + "/" + file_name;
+                club_image_url = @"~/" + image_path;
+
+                photo.Resize(width: 140, height: 140, preserveAspectRatio: true, preventEnlarge: true);
+                photo.Save(club_image_url);
+            }
+            else
+            {
+                club_image_url = null;
+            }
+
+            photo = WebImage.GetImageFromRequest("banner-image");
+            if (photo != null)
+            {
+                file_name = Path.GetFileName(photo.FileName);
+                image_path = @"uploads/club/club_" + new_club_id + "/" + file_name;
+                club_banner_url = @"~/" + image_path;
+
+                photo.Resize(width: 850, height: 405, preserveAspectRatio: false, preventEnlarge: true);
+                photo.Save(club_banner_url);
+            }
+            else
+            {
+                club_banner_url = @"~/images/event-image.jpg";
+            }
+
+            db.Execute(@"UPDATE club set image_url = @0, image_banner_url = @1 
+                WHERE ClubId = @2", club_image_url, club_banner_url, new_club_id);
+
+            Response.Redirect(Href("~/club/detail", new_club_id));
+
+        }
+    }
+}
+
+
+<div class="row">
+	<div class="content col-sm-9">
+		
+	<h1 class="page-title">Add Your Club</h1>
+	<p class="help-block">Add your club to the SwamThat. Fields marked with an asterisk * are required.</p>
+			
+		<!-- Main Information -->
+        <form method="post" enctype="multipart/form-data">
+        @AntiForgery.GetHtml()
+        @* If at least one validation error exists, notify the user *@
+        @Html.ValidationSummary("Club creation was unsuccessful. Please correct the errors and try again.", excludeFieldErrors: true, htmlAttributes: null)
+		<div class="form form-item" role="form">
+		<fieldset>
+		<legend>Club Main Information</legend>
+		<p class="help-block">Adding your club's name and location will allow members to locate your club as well as provide a means of contacting you.</p>
+			<!-- Left Column -->
+			<div class="col-sm-6">
+				
+			<div class="form-group">
+                <label for="club-name" @if (!ModelState.IsValidField("club-name")) { <text> class="error-label" </text> }>Club Name *</label>
+				<input type="text" class="form-control" name="club-name" id="club-name">
+                <p>@Html.ValidationMessage("club-name")</p>
+			</div>
+				
+			<div class="form-item">
+                <label for="club-email" @if (!ModelState.IsValidField("club-email")) { <text> class="error-label" </text> }>Club Email *</label>
+				<input type="text" class="form-control" name="club-email" id="club-email">
+                <p>@Html.ValidationMessage("club-email")</p>
+			</div>
+				
+			<div class="form-item">
+                <label for="club-phone" @if (!ModelState.IsValidField("club-phone")) { <text> class="error-label" </text>  }>Club Phone Number</label>
+                <input type="text" class="form-control" name="club-phone" id="club-phone">
+                <p>@Html.ValidationMessage("club-phone")</p>
+			</div>
+			
+		<hr />
+				
+			<div class="form-item">
+			<h4>Club Interest</h4>
+			<p class="help-block">Check One *</p> 
+				<div class="radio-inline">
+					<label>
+                        <input type="radio" name="club-interest" value="Open Water">
+						Open Water
+					</label>
+				</div>
+					
+				<div class="radio-inline">
+					<label>
+                        <input type="radio" name="club-interest" value="Pool">
+						Pool
+					</label>
+				</div>
+					
+				<div class="radio-inline">
+					<label>
+                        <input type="radio" name="club-interest" value="Triathlon">
+						Triathlon
+					</label>
+				</div>
+			</div>
+			
+		<hr />
+				
+			<!-- Branding -->
+			<div class="form-group">
+				<label>Club Logo</label>
+                @FileUpload.GetHtml(name: "logo-image", initialNumberOfFiles: 1, allowMoreFilesToBeAdded: false, includeFormTag: false, uploadText: "Upload")
+				<p class="help-block">Files must be less than <strong>4 MB.</strong><br />
+			Allowed file types: <strong>png gif jpg jpeg</strong>. Image will resize to 140 x 140px.</p>
+			<!-- /Branding -->
+			</div>
+				
+			<!-- Branding -->
+			<div class="form-group">
+				<label>Club Banner</label>
+                @FileUpload.GetHtml(name: "banner-image", initialNumberOfFiles: 1, allowMoreFilesToBeAdded: false, includeFormTag: false, uploadText: "Upload")
+				<p class="help-block">Files must be less than <strong>4 MB.</strong><br />
+			Allowed file types: <strong>png gif jpg jpeg</strong>. Image will resize to 850 x 405px.</p>
+			<!-- /Branding -->
+			</div>
+
+			<!-- /Left Column -->
+			</div>
+				
+			<!-- Right Column -->
+			<div class="col-sm-6">
+				
+				<!-- Address -->
+				<h4>Your Club's Location</h4>
+					
+				<div class="form-item">
+                    <label for="club-address" @if (!ModelState.IsValidField("club-address")) { <text> class="error-label" </text> }>Address *</label>
+                    <input type="text" class="form-control" name="club-address" id="club-address">
+                    <p>@Html.ValidationMessage("club-address")</p>
+				</div>
+					
+				<div class="form-item">
+                    <label for="club-city" @if (!ModelState.IsValidField("club-city")) { <text> class="error-label" </text>  }>City *</label>
+                    <input type="text" class="form-control" name="club-city" id="club-city">
+                    <p>@Html.ValidationMessage("club-city")</p>
+				</div>
+					
+                <div class="form-item">
+                    <label for="club-state" @if (!ModelState.IsValidField("state-selected")) { <text> class="error-label" </text>   }>State *</label>
+                    @RenderPage("~/Shared/_StateSelectorInForm.cshtml")
+                    <p>@Html.ValidationMessage("state-selected")</p>
+                </div>
+					
+				<div class="form-group">
+                    <label for="club-zip" @if (!ModelState.IsValidField("club-zip")) { <text> class="error-label" </text>  }>Postal Code</label>
+                    <input type="text" class="form-control" id="club-zip" name="club-zip">
+                    <p>@Html.ValidationMessage("club-zip")</p>
+				</div>
+				
+				<!-- /Address -->
+				
+			<!-- /Right Column -->
+			</div>
+			
+		</fieldset>
+		<!-- /Main Information -->
+		</div>
+	
+		<!-- Club Description -->
+		<div class="form form-item" role="form">
+			<fieldset>
+			<legend>Club Description</legend>
+			<p class="help-block">Tell SwamThat members and visitors a little about your club.</p>
+				
+			<div class="form-group">
+				<textarea class="form-control" rows="3" name="club-description" id="club-description" ></textarea>
+			</div>
+			</fieldset>
+		<!-- /Club Description -->	
+		</div>
+			
+		<!-- Social -->
+		<div class="social-media">
+		<h4>Social Media Links</h4>
+		<p class="help-block">You may add your social media pages to your SwamThat Club profile.</p> 
+			<div class="form-facebook col-sm-3">
+				<label>Facebook</label>
+				<input class="form-control" type="text" name="club-facebook" id="club-facebook" >
+			</div>
+				
+			<div class="form-twitter col-sm-3">
+				<label>Twitter</label>
+				<input class="form-control" type="text" name="club-twitter" id="club-twitter" >
+			</div>
+		<!-- /Social -->
+		</div>
+	    
+        <div class="col-sm-3">
+            <div class="row">
+                <div class="col-sm-4" style="margin-top: 16px;">
+                    <div style="clear: both;" class="control-group">
+                        <input class="btn btn-default" type="submit" value="Submit" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+	</form>
+	
+	<!-- /Content -->
+	</div>
+		 
+    @*RenderPage("~/Shared/Layout/_Sidebar.cshtml")*@	
+<!-- /Row -->
+</div>

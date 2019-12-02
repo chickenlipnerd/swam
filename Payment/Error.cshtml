@@ -1,0 +1,9 @@
+﻿@{
+    Page.Title = "Pay Error";
+    Global.BodyClass = "about page";
+
+    string return_url = Server.UrlDecode(Request["ref"]);
+}
+
+<p>Sorry, there was an error processing your payment</p>
+<p><a href="@return_url.Substring(1)">Please check your payment settings, and try again.</a></p>

@@ -1,0 +1,242 @@
+﻿@* Remove this section if you are using bundling *@
+@section Scripts {
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+}
+
+@{
+    WebSecurity.RequireAuthenticatedUser();
+
+    Page.Title = "Add Swim Event";
+    Global.BodyClass = "about page";
+
+    var event_by_uid = WebSecurity.CurrentUserId;
+    
+    var event_title = "";
+    var event_state = "";
+    var event_city = "";
+    var event_zip = "";
+    var event_banner_url = "";
+    var event_branding_url = "";
+    var event_description = "";
+    var google_map_url = "";
+    var file_name = "";
+    var image_path = "";
+    var event_date = "";
+    var event_type_name = "";
+
+    // Setup validation
+    var dbstypes = Database.Open("SwamThat");
+    var qstypes = dbstypes.Query("Select type_id from swim_type").ToArray();
+
+    string[] swim_type_ids = new string[qstypes.Length];
+    int i = 0;
+    foreach (var name in qstypes)
+    {
+        swim_type_ids[i] = name.type_id;
+        i++;
+    }
+
+    string swim_type_regex = string.Join("|", swim_type_ids);
+    
+    Validation.RequireField("event-title", "<p>You must specify a title for your swim event.</p>");
+    Validation.RequireField("event-zip", "<p>Please enter a zip code.</p>");
+    Validation.RequireField("event-date", "<p>Please enter a date.</p>");
+    Validation.Add("swim-type",
+        Validator.Regex("(" + swim_type_regex + ")", "<p>Invalid Swim Type selection</p>"));
+    Validation.Add("event-zip",
+        Validator.Regex("^\\d{5}(-\\d{4})?$", "<p>Invalid zip code.</p>"));
+    
+    WebImage photo = null;
+
+    if (IsPost) {
+        AntiForgery.Validate();
+        
+        if (Validation.IsValid()) {
+            event_title = Request.Form["event-title"];
+            event_state = Request.Form["state-selected"];
+            event_city = Request.Form["event-city"];
+            event_type_name = Request.Form["swim-type"];
+            event_zip = Request.Form["event-zip"];
+            event_date = Request.Form["event-date"];
+            /// TODO: use direct cordinates for google map
+            //geo_json            = Request.Form[""];
+            event_description = Request.Form["event-description"];
+            google_map_url = Request.Form["google-map-url"];
+
+            var db = Database.Open("SwamThat");
+            db.Execute(@"INSERT INTO event 
+                (event_title, event_by_uid, event_type_name, event_state, event_city, event_zip, event_description, google_map_url, event_date) VALUES 
+                (@0, @1, @2, @3, @4, @5, @6, @7, @8)", event_title, event_by_uid, event_type_name, event_state, event_city, event_zip, 
+            event_description, google_map_url, event_date);
+
+            var new_evnt_id = db.GetLastInsertId();
+
+            var imageroot = Server.MapPath("~/uploads/event/");
+            var foldername = "event_" + new_evnt_id.ToString();
+            var path = Path.Combine(imageroot, foldername);
+            
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
+            
+            photo = WebImage.GetImageFromRequest("event-banner");
+            if (photo != null) {
+                //file_name = Guid.NewGuid().ToString() + "_" + Path.GetFileName(photo.FileName);
+                file_name = Path.GetFileName(photo.FileName);
+                //event_banner_url = Server.MapPath("~/uploads/images/" + file_name);
+                image_path = @"uploads/event/event_" + new_evnt_id + "/" + file_name;
+                event_banner_url = @"~/" + image_path;
+
+                photo.Resize(width: 850, height: 405, preserveAspectRatio: true, preventEnlarge: true);
+                photo.Save(event_banner_url);
+            } else {
+                event_banner_url = @"~/images/event-image.jpg";
+            }
+
+            photo = WebImage.GetImageFromRequest("event-branding");
+            if (photo != null) {
+                file_name = Path.GetFileName(photo.FileName);
+                image_path = @"uploads/event/event_" + new_evnt_id + "/" + file_name;
+                event_branding_url = @"~/" + image_path;
+
+                photo.Resize(width: 140, height: 140, preserveAspectRatio: false, preventEnlarge: true);
+                photo.Save(event_branding_url);
+            } else {
+                event_branding_url = null;//@"~/images/event-logo.jpg";
+            }
+
+            db.Execute(@"UPDATE event set event_banner_url = @0,  event_branding_url = @1 
+                WHERE event_id = @2", event_banner_url, event_branding_url, new_evnt_id);
+            
+            Response.Redirect(Href("~/event/detail", new_evnt_id));
+
+        }
+    }
+}
+<div class="row">
+    <div class="content col-sm-12">
+        <hgroup class="title">
+            <h1 class="page-title">@Page.Title</h1>
+            <h3 class="page-title">Add a new swim</h3>
+        </hgroup>
+        <div class="form">
+            <div class="row profile-information">
+                <div class="form-item col-md-9">
+                    <form method="post" enctype="multipart/form-data">
+                        @AntiForgery.GetHtml()
+                        @* If at least one validation error exists, notify the user *@
+                        @Html.ValidationSummary("Swim event creation was unsuccessful. Please correct the errors and try again.", excludeFieldErrors: true, htmlAttributes: null)
+                        <fieldset>
+                            <legend>Add Swim Event</legend>
+
+                            <div class="row">
+                                <div class="col-sm-9">
+                                    <div class="control-group">
+                                        <label for="event-title" @if (!ModelState.IsValidField("event-title")) { <text> class="error-label" </text>  }>Event Title</label>
+                                        <input type="text" name="event-title" id="event-title" class="form-control" @Validation.For("event-title") />
+                                        @Html.ValidationMessage("event-title")
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="form-group col-sm-4">
+                                    <label for="swim-type" @if (!ModelState.IsValidField("swim-type")) { <text> class="error-label" </text> }>Event Type</label>
+                                    @RenderPage("~/Shared/_SwimTypeSelector.cshtml")
+                                    @Html.ValidationMessage("swim-type")
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-sm-4">
+                                    <div class="control-group">
+                                        <label for="event-date" @if (!ModelState.IsValidField("event-date")) { <text> class="error-label" </text>  }>Date of the Event</label>
+                                        <input type="text" name="event-date" id="event-date" class="form-control" @Validation.For("event-date") />
+                                        @Html.ValidationMessage("event-date")
+                                    </div>
+                                    <script>
+                                        $("#event-date").datepicker();
+                                    </script>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-sm-4">
+                                    <div class="control-group">
+                                        <label for="event-city">City</label>
+                                        <input type="text" name="event-city" id="event-city" class="form-control" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-sm-4">
+                                    <div class="control-group">
+                                        <label for="state-selected">State</label>
+                                        @RenderPage("~/Shared/_StateSelectorInForm.cshtml")
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-sm-4">
+                                    <div class="control-group">
+                                        <label for="event-zip" @if (!ModelState.IsValidField("event-zip")) { <text> class="error-label" </text>    }>Zip</label>
+                                        <input type="text" name="event-zip" id="event-zip" class="form-control" @Validation.For("event-zip") />
+                                        @Html.ValidationMessage("event-zip")
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-sm-4">
+                                    <div class="control-group">
+                                        <label for="event-location-banner">Event Branding</label>
+                                        @FileUpload.GetHtml(name: "event-branding", initialNumberOfFiles: 1, allowMoreFilesToBeAdded: false, includeFormTag: false, uploadText: "Upload")
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-sm-4">
+                                    <div class="control-group">
+                                        <label for="event-location-banner">Event Banner</label>
+                                        @FileUpload.GetHtml(name: "event-banner", initialNumberOfFiles: 1, allowMoreFilesToBeAdded: false, includeFormTag: false, uploadText: "Upload")
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-sm-9">
+                                    <div class="control-group">
+                                        <label for="google-map">Google Map URL</label>
+                                        <input type="text" name="google-map-url" id="google-map-url" class="form-control" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-sm-9">
+                                    <div class="control-group">
+                                        <label for="google-map">Description</label>
+                                        <textarea name="event-description" rows="9" class="form-control"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-sm-4" style="margin-top: 16px;">
+                                    <div style="clear: both;" class="control-group">
+                                        <input class="btn btn-default" type="submit" value="Submit" />
+                                    </div>
+                                </div>
+                            </div>
+                        </fieldset>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

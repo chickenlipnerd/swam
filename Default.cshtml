@@ -1,0 +1,169 @@
+﻿@{
+    Layout = "~/_HomeLayout.cshtml";
+    Page.Title = "Home Page";
+    Global.BodyClass = "front";
+
+    var db = Database.Open("SwamThat");
+    var swim_evt = db.Query("SELECT TOP 5 * FROM EVENT WHERE event_by_uid = @0", 1);
+}
+
+@section home_slider {
+<section class="slider">
+@*
+<!-- Slider -->
+
+<!--
+Slider content is dynamic and will show the latest sponsored races.
+Background image will not change
+-->
+*@
+
+    <div class="flex-container">
+	    <div class="flexslider">
+
+	        <ul class="slides">
+
+                @foreach (var evt in swim_evt)
+                {
+	
+	            <li>@*<!-- CMS Dynamic Content -->*@
+	                <div class="row">
+		                <div class="col-sm-8 slider-teaser">
+		                    <h2>@evt.event_title</h2>
+		                    <p><strong>@evt.event_city, @db.QuerySingle("SELECT name FROM us_states where StateId = @0", evt.event_state).name</strong></p>
+		                    @{
+                                string desc = evt.event_description.ToString();
+                                if (desc.Length > 300)
+                                {
+                                    <text><p>@(desc.Substring(0, 300) + "...")<a href="@Href("~/event/detail", evt.event_id)">more</a></p></text>
+                                }
+                                else
+                                {
+                                    <text><p>@desc</p></text>
+                                }
+                            }
+                              
+		                </div>
+		
+		                <div class="col-sm-4 slider-cta">
+		                    @*<!-- Button link to the race information page -->*@
+		                    <ul>
+		                        <li><a href="@Href("~/event/detail", evt.event_id)" class="btn btn-warning" role="button">Register</a></li>
+		                    </ul>
+		                </div>
+	                </div>
+	            </li>
+	            
+                }
+	
+	        </ul>
+
+	    </div>
+
+    <!-- /Slider -->
+    </div>
+</section>
+}
+
+@section featured {
+<section class="featured">
+
+</section>
+}
+
+<!-- Home Page Quick Links -->
+<div class="quick-links-wrap">
+    <div class="container">
+	    <!-- Swims -->
+	    <div class="col-md-4 swim block">
+	        <h3>Find a Swim Event</h3>
+	        <p>Find a swim in your area or search the country for open water, triathlon or pool events.</p>
+	
+	        <p><a href="@Href("~/Swims")" class="btn btn-primary" role="button">Search</a></p>
+	
+	        <p><a href="@Href("~/event/addevent")" title="Submit My Swim">Submit My Swim</a><br />
+	        &nbsp;</p>
+	    </div>
+	    <!-- Calculator -->
+	    <div class="col-md-4 calculator block">
+	        <h3>Swim Efficiency Calculator</h3>
+	        <p>Use our calculator to determine your race times. Members may save times to their profile.</p>
+
+	        <p>@*<a href="#" class="btn btn-primary" role="button">Calculate</a>*@<span class="btn btn-default">Coming Soon!</span></p>
+	
+	        <p>&nbsp;<br />
+	        &nbsp;</p>
+	    </div>
+	    <!-- Clubs -->
+	    <div class="col-md-4 club block">
+	        <h3>Find a Swim Club</h3>
+	        <p>Find a swim club in your area.<br />
+	        &nbsp;</p>
+	        <p><a href="@Href("~/Clubs")" class="btn btn-primary" role="button">Search</a></p>
+	        <p><a href="@Href("~/club/addclub")" title="Submit My Club">Submit My Club</a><br />
+	        &nbsp;</p>
+	    </div>
+    </div>
+<!-- /Home Page Quick Links -->
+</div>
+
+<!-- Main Content -->
+@*
+<div id="container-wrap">
+    <div class="main-container container">
+	    <div class="row">
+	        <div class="content col-sm-9">
+	            <!-- 
+	            The content in this block is dynamic and used by the CMS to randomally feed swims into this block. 
+	            All swims will randomally appear here. 
+	            -->
+	            <section class="col-md-6 block race-list">
+	                <h3>Featured Swims</h3>
+	                <ul>
+	                    <li><a href="#">LeadmanTri Life Time Epic 250/125 Bend</a><br />
+	                    <span class="state">Bend, Oregon <span>|</span> Triathlon</span></li>
+	                    <li><a href="#">LeadmanTri Life Time Epic 250/125 Bend</a><br />
+	                    <span class="state">Bend, Oregon <span>|</span> Triathlon</span></li>
+	                    <li><a href="#">LeadmanTri Life Time Epic 250/125 Bend</a><br />
+	                    <span class="state">Bend, Oregon <span>|</span> Triathlon</span></li>
+	                    <li><a href="#">LeadmanTri Life Time Epic 250/125 Bend</a><br />
+	                    <span class="state">Bend, Oregon <span>|</span> Triathlon</span></li>
+	                    <li><a href="#">LeadmanTri Life Time Epic 250/125 Bend</a><br />
+	                    <span class="state">Bend, Oregon <span>|</span> Triathlon</span></li>
+	                </ul>
+	            </section>
+	
+	            <!-- 
+	            The content in this block is dynamic and used by the CMS to feed upcoming swims into this block based on race dates. 
+	            -->
+	            <section class="col-md-6 block race-list">
+	                <h3>Upcoming Races</h3>
+	                <ul>
+	                    <li><a href="#">LeadmanTri Life Time Epic 250/125 Bend</a><br />
+	                    <span class="state">Bend, Oregon <span>|</span> Triathlon</span></li>
+	                    <li><a href="#">LeadmanTri Life Time Epic 250/125 Bend</a><br />
+	                    <span class="state">Bend, Oregon <span>|</span> Triathlon</span></li>
+	                    <li><a href="#">LeadmanTri Life Time Epic 250/125 Bend</a><br />
+	                    <span class="state">Bend, Oregon <span>|</span> Triathlon</span></li>
+	                    <li><a href="#">LeadmanTri Life Time Epic 250/125 Bend</a><br />
+	                    <span class="state">Bend, Oregon <span>|</span> Triathlon</span></li>
+	                    <li><a href="#">LeadmanTri Life Time Epic 250/125 Bend</a><br />
+	                    <span class="state">Bend, Oregon <span>|</span> Triathlon</span></li>
+	                </ul>
+	            </section>
+
+	        <!-- /Content -->
+	        </div>
+		 
+	        <!-- Sidebar Top -->	 
+	        <div class="col-sm-3 sidebar" role="complementary">
+	
+	        <!-- /Sidebar Top -->
+	        </div>
+	
+        </div>
+
+    </div>
+
+<!-- /Main Content Wrap -->
+</div>*@

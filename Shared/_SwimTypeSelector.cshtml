@@ -1,0 +1,13 @@
+﻿@{
+    var db = Database.Open("SwamThat");
+    var swim_types = db.Query("Select * from swim_type");
+}
+<select id="swim-type" name="swim-type" class="form-control">
+    <option value="none">Select Swim Type</option>
+    @{
+        foreach (var st in swim_types)
+        {
+            <option value="@st.type_id">@st.type_id</option>
+        }
+    }
+</select>

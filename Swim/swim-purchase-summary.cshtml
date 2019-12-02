@@ -1,0 +1,344 @@
+﻿@using System;
+@using System.Collections.Generic;
+@using System.IO;
+@using PayPal.AdaptivePayments;
+@using PayPal.AdaptivePayments.Model;
+@using log4net;
+
+@* Remove this section if you are using bundling *@
+@section Scripts {
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+}
+
+@{
+    Page.Title = "Swim Registration";
+
+    string[] selected_swims = Request["swims"].Split(',');
+    int event_id = Request["event-id"].AsInt();
+    Dictionary<string, string> swim_summary = new Dictionary<string, string>();
+
+    // form fields
+    var fname = "";
+    var lname = "";
+    var email = "";
+    var usms_id = "";
+    var reg_age = "";
+    var reg_gender = "";
+
+    // Setup Validation
+    Validation.RequireField("fname", "First Name is a required field.");
+    Validation.Add("fname",
+        Validator.StringLength(
+            maxLength: 80,
+            minLength: 2,
+            errorMessage: "First name must contain between 2 to 80 characters"));
+    Validation.RequireField("lname", "Last Name is a required field");
+    Validation.Add("lname",
+        Validator.StringLength(
+            maxLength: 80,
+            minLength: 2,
+            errorMessage: "Last name must contain between 2 to 80 characters"));
+    Validation.RequireField("email", "Email is a required field");
+    Validation.Add("email",
+        Validator.Regex(@"^[ \t]*(([\w-]+\.)+[\w-]+|([a-zA-Z]{1}|[\w-]{2,}))@((([0-1]?[0-9]{1,2}|25[0-5]|2[0-4][0-9])\.([0-1]?[0-9]{1,2}|25[0-5]|2[0-4][0-9])\.([0-1]?[0-9]{1,2}|25[0-5]|2[0-4][0-9])\.([0-1]?[0-9]{1,2}|25[0-5]|2[0-4][0-9])){1}|([a-zA-Z\w-]+\.)+[a-zA-Z]{2,4})[ \t]*$", "Invalid Email"));
+    //Validation.RequireField("usms-id", "USMS ID is a required field");
+    Validation.Add("usms-id",
+        Validator.Regex(@"^\w{4}(?:[-\s])?\w{5}?$"));
+    Validation.RequireField("reg-age", "Age is a required field");
+    Validation.Add("reg-age",
+        Validator.Range(6, 200, "Age must be 6 and up"));
+    Validation.RequireField("reg-gender", "Please choose a gender.");
+
+    int[] swims_array = new int[selected_swims.Length];
+    //string query = "SELECT * FROM swim WHERE swim_id in (@0) AND swim_in_event = @1";
+    string query = "SELECT * FROM swim WHERE swim_id = @0 AND swim_in_event = @1";
+    string hosts_query = "SELECT * FROM event WHERE event_id = @0";
+    string eventtype_query = "SELECT * FROM swim_type WHERE type_id = @0";
+    var db = Database.Open("SwamThat");
+    var swimmels = new List<dynamic>();
+
+    var event_info = db.QuerySingle(hosts_query, event_id);
+    string event_paypal = event_info.event_paypal;
+    string event_title = event_info.event_title;
+    string event_city = event_info.event_city;
+    string event_type_name = event_info.event_type_name;
+
+    var event_type_info = db.QuerySingle(eventtype_query, event_type_name);
+    var swamthat_surcharge = event_type_info.swamthat_tax;
+
+    System.Globalization.DateTimeFormatInfo mfi = new System.Globalization.DateTimeFormatInfo();
+    DateTime d = Convert.ToDateTime(event_info.event_date);
+    var event_month = string.Format("{0}", mfi.GetMonthName(d.Month));
+    var event_day = string.Format("{0}", d.Day);
+    var event_year = string.Format("{0}", d.Year);
+    string event_date = string.Format("{0} {1}, {2}", mfi.GetMonthName(d.Month), d.Day, d.Year);
+
+    for (int i = 0; i < selected_swims.Length; i++)
+    {
+        swims_array[i] = Convert.ToInt32(selected_swims[i].Split('_')[1]);
+        swimmels.Add(db.QuerySingle(query, swims_array[i], event_id));
+    }
+
+    /// use string builder to create purchase summary to render on the page along with total.
+    System.Text.StringBuilder pay_summary = new System.Text.StringBuilder();
+    System.Text.StringBuilder pay_memo = new System.Text.StringBuilder();
+    decimal pay_total = 0m;
+    foreach (var swmms in swimmels)
+    {
+        //<p><strong>@swmms.swim_title:</strong><br />
+        pay_summary.Append("<p><strong>" + swmms.swim_title + ":</strong><br />");
+        //@string.Format("{0:C}", swmms.price)</p>
+        pay_summary.Append("Price: " + string.Format("{0:C}", swmms.price) + "</p>");
+        pay_memo.Append("Registering for swim, " + swmms.swim_title + ". ");
+
+        // add up total
+        pay_total += Convert.ToDecimal(swmms.price);
+    }
+
+    // format added up total
+    //<p><strong>Total:</strong> @string.Format("{0:C}",pay_total)</p>
+    pay_summary.Append("<hr /><p><strong>Total: " + "</strong> " + string.Format("{0:C}", pay_total) + "</p>");
+    pay_memo.Insert(1, "Swim Event, " + event_info.event_title + " on " + event_date + " ");
+
+    if (IsPost)
+    {
+        AntiForgery.Validate();
+
+        if (Validation.IsValid())
+        {
+            fname = Request.Form["fname"];
+            lname = Request.Form["lname"];
+            email = Request.Form["email"];
+            usms_id = Request.Form["usms-id"];
+            reg_age = Request.Form["reg-age"];
+            reg_gender = Request.Form["reg-gender"];
+
+            // Setup Paypal Pay request
+            ReceiverList receiverList = new ReceiverList();
+
+            /// TODO: Need to make calculation based on swim type and it's percentage cut applied to platform owner
+            if (event_paypal.Trim() != /* Removed for security */)    // primary and secondaries can't match
+            {
+                decimal platform_owner_cut = Decimal.Multiply(Convert.ToDecimal(swamthat_surcharge), Convert.ToDecimal(pay_total));
+                receiverList.receiver = new List<Receiver>();
+                Receiver secondaryReceiver = new Receiver(Decimal.Round(platform_owner_cut, 2)); // depends on swim type
+                // SANDBOX ACCT : secondaryReceiver.email = "pillow@biter.com";
+                <!-- Removed for security -->
+                receiverList.receiver.Add(secondaryReceiver);
+            }
+
+            decimal middleman_cut = Decimal.Multiply(Convert.ToDecimal(0.010), Convert.ToDecimal(pay_total));
+            Receiver platformCreator = new Receiver(Decimal.Round(middleman_cut, 2));
+            <!-- Removed for security -->
+            //platformCreator.email = "merch1@testing.com";
+            receiverList.receiver.Add(platformCreator);
+
+            Receiver primaryReceiver = new Receiver(Convert.ToDecimal(pay_total));
+
+            primaryReceiver.email = event_paypal.Trim();
+            primaryReceiver.primary = true;
+            receiverList.receiver.Add(primaryReceiver);
+
+            RequestEnvelope requestEnvelope = new RequestEnvelope("en_US");
+            string actionType = "PAY";
+            string returnUrl = "https://www.swamthat.com/payment/thankyou";
+            string cancelUrl = "https://www.swamthat.com/payment/cancel";
+            //string returnUrl = "https://localhost:44300/payment/thankyou";
+            //string cancelUrl = "https://localhost:44300/payment/cancel";
+            string currencyCode = "USD";
+            PayRequest requestPay = new PayRequest(requestEnvelope, actionType, cancelUrl, currencyCode, receiverList, returnUrl);
+            requestPay.ipnNotificationUrl = "http://IPNhost";
+            requestPay.memo = pay_memo.ToString();
+
+            Dictionary<string, string> sdkConfig = new Dictionary<string, string>();
+            <!-- Removed for security -->
+
+            AdaptivePaymentsService adaptivePaymentsService = new AdaptivePaymentsService(sdkConfig);
+            PayResponse payResponse = adaptivePaymentsService.Pay(requestPay);
+
+            string payKey = "";
+            int pay_err_count = payResponse.error.Count;
+            if (payResponse.responseEnvelope.ack.ToString().Trim().ToUpper().Equals("SUCCESS"))
+            {
+                if (!Request.Url.ToString().Contains("localhost"))
+                {
+                    System.Text.StringBuilder sb = new System.Text.StringBuilder();
+                    sb.Append("<p>First Name: " + fname);
+                    sb.Append("<br />Last Name: " + lname);
+                    sb.Append("<br />Email: " + email);
+                    sb.Append("<br />Date: " + event_date);
+                    sb.Append("<br />USMS: " + usms_id);
+                    sb.Append("<br />Age: " + reg_age);
+                    sb.Append("<br />Gender: " + reg_gender);
+                    sb.Append("<p>");
+
+                    // Send to Arlo
+                    WebMail.Send(
+                     /* Removed for security */
+                    );
+
+                    sb.Clear();
+                    sb.Append("<p>Thanks for registering for the swim in " + event_city);
+                    sb.Append("<br />Swim Event: " + event_title);
+                    sb.Append("<br />Save the date: " + event_date);
+                    sb.Append("<br />If you experience any issues registering for an event, please contact Arlo at");
+                    sb.Append("<br />swamthat@yahoo.com");
+                    sb.Append("</p>");
+
+                    // Send to Registrant
+                    WebMail.Send(
+                        to: email,
+                        subject: "Thank you for Registering",
+                        body: sb.ToString()
+                    );
+                }
+
+                payKey = payResponse.payKey;
+                Response.Redirect("https://www.paypal.com/webscr?cmd=_ap-payment&paykey=" + payKey);
+                //Response.Redirect("https://www.sandbox.paypal.com/webscr?cmd=_ap-payment&paykey=" + payKey);
+            }
+            else
+            {
+                Response.Redirect(Href("~/payment/error?ref=", Server.UrlEncode(Request.Url.AbsoluteUri)));
+            }
+
+            //// TODO: Make code modular by leveraging external methods. example below
+            //var foo = "";
+            //PaySample sample = new PaySample();
+            //
+            //PayPal.AdaptivePayments.Model.PayRequest requestPay = sample.ChainPayment();
+            //PayPal.AdaptivePayments.Model.PayResponse responsePaymentDetails = sample.PayAPIOperations(requestPay);
+
+        }
+
+
+    }
+}
+
+<h1>Purchase Summary</h1>
+<h3>Event: @event_title</h3>
+<p>Date: @event_date</p>
+
+@Html.Raw(pay_summary)
+
+<p class="help-block">
+    Submit your registration information using the form below. All Fields required except for the USMS number. single event memberships will be available upon signup or the day of the event. See more information and how to register for usms id at http://www.usms.org
+        
+</p>
+<form method="post">
+    @AntiForgery.GetHtml()
+    @* If at least one validation error exists, notify the user *@
+    @Html.ValidationSummary("Event registration was unsuccessful. Please correct the errors and try again.", excludeFieldErrors: true, htmlAttributes: null)
+    <input type="hidden" name="pay-amt" value="@pay_total" />
+    <div class="form form-item" role="form">
+        <fieldset>
+            <legend>Registration Information</legend>
+            <div class="row">
+                <div class="col-sm-4">
+                    <div class="control-group">
+                        <label for="fname" @if (!ModelState.IsValidField("fname")) { <text> class="error-label" </text>   }>First Name</label>
+                        <input type="text" name="fname" id="fname" class="form-control" @Validation.For("fname") />
+                        <p>@Html.ValidationMessage("fname")</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-4">
+                    <div class="control-group">
+                        <label for="lname" @if (!ModelState.IsValidField("lname")) { <text> class="error-label" </text>    }>Last Name</label>
+                        <input type="text" name="lname" id="lname" class="form-control" @Validation.For("lname") />
+                        <p>@Html.ValidationMessage("lname")</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-4">
+                    <div class="control-group">
+                        <label for="email" @if (!ModelState.IsValidField("email")) { <text> class="error-label" </text>     }>Email</label>
+                        <input type="text" name="email" id="email" class="form-control" @Validation.For("email") />
+                        <p>@Html.ValidationMessage("email")</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-4">
+                    <div class="control-group">
+                        <label for="usms-id" @if (!ModelState.IsValidField("usms-id")) { <text> class="error-label" </text>      }>USMS Number (ex: 1234-067A9)</label>
+                        <input type="text" name="usms-id" id="usms-id" class="form-control" @Validation.For("usms-id") />
+                        <p>@Html.ValidationMessage("usms-id")</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-4">
+                    <div class="control-group">
+                        <label for="reg-age" @if (!ModelState.IsValidField("reg-age")) { <text> class="error-label" </text>       }>Age</label>
+                        <input type="text" name="reg-age" id="usms-id" class="form-control" @Validation.For("reg-age") />
+                        <p>@Html.ValidationMessage("reg-age")</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-4">
+                    <div class="control-group">
+                        <label style="display:none;" for="reg-gender" @if (!ModelState.IsValidField("reg-gender")) { <text> class="error-label" </text>        }>Gender</label><br />
+                        <div class="radio-inline">
+                        <label>
+                            <input type="radio" value="female" name="reg-gender" @Validation.For("reg-gender")>
+                            Female
+                        </label>
+                        </div>
+                        
+                        <div class="radio-inline">
+                        <label>
+                            <input type="radio" value="male" name="reg-gender" @Validation.For("reg-gender")>
+                            Male
+                        </label>
+                        </div>
+
+                        <p>@Html.ValidationMessage("reg-gender")</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-4">
+                    <p class="help-block">Click the &quot;Continue Registration&quot; button below on this form to process your payment with PayPal and complete the registration process.</p>
+                    <p class="help-block">By clicking the &quot;Continue Registration&quot; button on this form you are agreeing to the <a href="#" data-toggle="modal" data-target="#terms-modal">terms and conditions.</a></p>
+                </div>
+            </div>
+
+            <div class="modal fade terms-modal" id="terms-modal" tabindex="-1" role="dialog" aria-labelledby="terms-modal" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                            <h4 class="modal-title">Terms and Conditions</h4>
+                        </div>
+                        <div class="modal-body">
+                            <iframe style="width: 100%" src="@Href("~/policies/terms-conditions.html")"></iframe>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">OK</button>
+                        </div>
+                    </div><!-- /.modal-content -->
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-4" style="margin-top: 16px;">
+                    <div style="clear: both;" class="control-group">
+                        <input class="btn btn-default" type="submit" value="Continue Registration" />
+                        @*<input type="submit" value="payment" />*@
+                    </div>
+                </div>
+            </div>
+        </fieldset>
+    </div>
+</form>

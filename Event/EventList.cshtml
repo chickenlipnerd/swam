@@ -1,0 +1,32 @@
+﻿@{
+    WebSecurity.RequireAuthenticatedUser();
+    Page.Title = "My Events";
+    var uid = UrlData[0].AsInt(-1);
+    var db = Database.Open("SwamThat");
+    var events = db.Query("select * from event where event_by_uid = @0 order by event_id", uid.ToString());
+    
+    if (events == null)
+    {
+        Response.Redirect("~/");
+    }
+}
+
+<div class="row">
+    <div class="content col-sm-9">
+        @{
+            foreach (var evt in events)
+            {
+	        <!-- Row -->
+                <div class="row list-row">
+                    <div class="list-row-content col-sm-9">
+                        <h4>@evt.event_title</h4>
+                        <p class="state">@evt.event_city, @evt.event_state <span>|</span> @evt.event_type_name</p>
+                    </div>
+                    <div class="list-cta col-sm-3">
+                        <a href="@Href("~/event/detail", evt.event_id)" data-paypal-button="true" class="btn btn-warning" role="button">View Event Details</a>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>

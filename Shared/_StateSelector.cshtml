@@ -1,0 +1,24 @@
+﻿@{
+    var db = Database.Open("SwamThat");
+    var us_states = db.Query("Select * from us_states");
+    var is_selected_state = Request["state-selected"];
+}
+<select id="state-selected" name="state-selected" class="form-control" onchange="this.form.submit();">
+    <option value="none">-Select-</option>
+    <option value="all">All States</option>
+    @{
+        foreach (var st in us_states) {
+            if (is_selected_state != null) {
+                if (is_selected_state.ToString().Trim() == st.StateId.ToString().Trim()) {
+                    <option value="@st.StateId.ToString().Trim()" selected="selected">@st.name</option>
+                } else {
+                    <option value="@st.StateId.ToString().Trim()">@st.name</option>
+                }
+            } else {
+                <option value="@st.StateId.ToString().Trim()">@st.name</option>
+            }
+        }
+    }
+
+</select>
+<noscript><input type="submit" value="Go" /></noscript>

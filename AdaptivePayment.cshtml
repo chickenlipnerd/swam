@@ -1,0 +1,27 @@
+﻿@{
+    PayPal.AdaptivePayments.Model.ReceiverList receiverList = new PayPal.AdaptivePayments.Model.ReceiverList();
+
+    receiverList.receiver = new List<PayPal.AdaptivePayments.Model.Receiver>();
+    PayPal.AdaptivePayments.Model.Receiver secondaryReceiver = new PayPal.AdaptivePayments.Model.Receiver(Convert.ToDecimal(1.00));
+    <!-- Removed for security -->
+    receiverList.receiver.Add(secondaryReceiver);
+
+    PayPal.AdaptivePayments.Model.Receiver primaryReceiver = new PayPal.AdaptivePayments.Model.Receiver(Convert.ToDecimal(2.00));
+    <!-- Removed for security -->
+    primaryReceiver.primary = true;
+    receiverList.receiver.Add(primaryReceiver);
+
+    PayPal.AdaptivePayments.Model.RequestEnvelope requestEnvelope = new PayPal.AdaptivePayments.Model.RequestEnvelope("en_US");
+    string actionType = "PAY";
+    string returnUrl = "https://devtools-paypal.com/guide/ap_chained_payment/dotnet?success=true";
+    string cancelUrl = "https://devtools-paypal.com/guide/ap_chained_payment/dotnet?cancel=true";
+    string currencyCode = "USD";
+    PayPal.AdaptivePayments.Model.PayRequest payRequest = new PayPal.AdaptivePayments.Model.PayRequest(requestEnvelope, actionType, cancelUrl, currencyCode, receiverList, returnUrl);
+    payRequest.ipnNotificationUrl = "http://replaceIpnUrl.com";
+
+    Dictionary<string, string> sdkConfig = new Dictionary<string, string>();
+    <!-- Removed for security -->
+
+    PayPal.AdaptivePayments.AdaptivePaymentsService adaptivePaymentsService = new PayPal.AdaptivePayments.AdaptivePaymentsService(sdkConfig);
+    PayPal.AdaptivePayments.Model.PayResponse payResponse = adaptivePaymentsService.Pay(payRequest);
+}

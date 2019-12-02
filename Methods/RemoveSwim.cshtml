@@ -1,0 +1,20 @@
+﻿@{
+    WebSecurity.RequireAuthenticatedUser();
+    //if (IsPost)
+    //{
+        /// admin may have option to add auto activate
+        var db = Database.Open("SwamThat");
+        var sql = "DELETE Swim WHERE swim_id = @0";
+
+        var swim_id = UrlData[0].AsInt(-1);
+
+        try
+        {
+            db.Execute(sql, swim_id);
+        }
+        catch (Exception e)
+        {
+            Response.Write("There was an error processing your request.");
+        }
+    //}
+}
